@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment variables
+.env
+config/.env
+*.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# User uploads (uncomment if you don't want to track uploaded files)
+# uploads/
+# products/
+
+# OS files
+.DS_Store
+Thumbs.db

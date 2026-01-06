@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrowserRouter,Routes,Route } from 'react-router-dom';
 import {LoginPage,SignupPage,Home,CreateProduct, MyProducts, Cart, ProductDetails, Profile, CreateAddress, SelectAddress, OrderConfirmation, MyOrdersPage} from "./Routes";
+import Chatbot from './features/ai/components/Chatbot';
 import "./App.css";
 
 const App = () => {
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/order-confirmation" element={<OrderConfirmation />} />
         <Route path="/myorders" element={<MyOrdersPage />} />
       </Routes>
+      <Chatbot />
     </BrowserRouter>
   )
 }

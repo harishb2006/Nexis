@@ -8,6 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import orders from './controller/orders.js';
 import user from "./controller/user.js";
+import chat from "./ai/controllers/chat.js";
 import dotenv from "dotenv";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -82,5 +83,6 @@ app.use('/products', express.static(path.join(__dirname, 'products')));
 app.use("/api/v2/user", user);
 app.use("/api/v2/product", product);
 app.use("/api/v2/orders", orders);
+app.use("/api/v2/chat", chat);
 app.use(ErrorHandler);
 export default app;

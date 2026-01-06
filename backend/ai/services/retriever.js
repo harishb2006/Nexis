@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { CohereClient } from "cohere-ai";
 import dotenv from "dotenv";
-import KnowledgeBase from "../model/knowledgeBase.js";
+import KnowledgeBase from '../models/knowledgeBase.js';
 
 dotenv.config();
 

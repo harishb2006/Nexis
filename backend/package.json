@@ -6,15 +6,18 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "ingest": "node rag/ingest.js",
-    "test-retrieval": "node rag/retriever.js"
+    "ingest": "node ai/services/documentIngestion.js",
+    "ingest:old": "node rag/ingest.js ./rag/data/Shipping.txt",
+    "test-retrieval": "node rag/retriever.js \"How does shipping work?\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@cerebras/cerebras_cloud_sdk": "^1.64.1",
     "bcryptjs": "^2.4.3",
+    "cohere-ai": "^7.20.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -24,7 +27,7 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.7",
     "openai": "^4.20.1",
-    "pdf-parse": "^1.1.1"
+    "pdf-parse": "^1.1.4"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

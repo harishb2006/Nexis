@@ -1,6 +1,10 @@
-const multer = require('multer');
-const path = require("path");
-const fs = require("fs");
+import multer from 'multer';
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 // Define directories
 const uploadsDir = path.join(__dirname, "uploads");
 const productsDir = path.join(__dirname, "products");
@@ -39,5 +43,7 @@ const pstorage = multer.diskStorage({
   });
 
   // Initialize upload object
-  exports.upload = multer({ storage: storage });
-  exports.pupload = multer({ storage: pstorage });
+  const upload = multer({ storage: storage });
+  const pupload = multer({ storage: pstorage });
+
+  export { upload, pupload };

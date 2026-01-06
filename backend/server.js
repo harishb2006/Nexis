@@ -1,5 +1,6 @@
-const app = require("./app");
-const connectDatabase = require("./db/Database");
+import app from "./app.js";
+import connectDatabase from "./db/Database.js";
+import dotenv from "dotenv";
 
 process.on("uncaughtException", (err) => {
     console.log(`Error: ${err.message}`);
@@ -8,7 +9,7 @@ process.on("uncaughtException", (err) => {
 });
 
 if (process.env.NODE_ENV !== "PRODUCTION") {
-    require("dotenv").config({
+    dotenv.config({
         path: "config/.env",
     });
 }

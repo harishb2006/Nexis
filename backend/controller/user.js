@@ -1,16 +1,22 @@
-const express = require("express");
-const path = require("path");
-const fs = require("fs");
-const User = require("../model/user");
+import express from "express";
+import path from "path";
+import fs from "fs";
+import User from "../model/user.js";
+import { upload } from "../multer.js";
+import ErrorHandler from "../utils/ErrorHandler.js";
+import catchAsyncErrors from "../middleware/catchAsyncErrors.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import dotenv from "dotenv";
+import { isAuthenticatedUser } from '../middleware/auth.js';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config();
+
 const router = express.Router();
-const { upload } = require("../multer");
-const ErrorHandler = require("../utils/ErrorHandler");
-const catchAsyncErrors = require("../middleware/catchAsyncErrors");
-const jwt = require("jsonwebtoken");
-// const sendMail = require("../utils/sendMail");
-const bcrypt = require("bcryptjs");
-require("dotenv").config();
-const { isAuthenticatedUser } = require('../middleware/auth');
 
 router.post(
     "/create-user",
@@ -154,4 +160,4 @@ router.get("/addresses", isAuthenticatedUser, catchAsyncErrors(async (req, res, 
 }
 ));
 
-module.exports = router;
+export default router;

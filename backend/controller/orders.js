@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
+import Order from '../model/order.js';
+import User from '../model/user.js';
+import { isAuthenticatedUser } from '../middleware/auth.js';
+
 const router = express.Router();
-const Order = require('../model/order'); // Adjust path as needed
-const User = require('../model/user');   // Adjust path as needed
-const { isAuthenticatedUser } = require('../middleware/auth');
 
 router.post('/place-order', isAuthenticatedUser, async (req, res) => {
     try {
@@ -115,4 +116,4 @@ router.patch('/cancel-order/:orderId',  isAuthenticatedUser, async (req, res) =>
     }
 });
 
-module.exports = router;
+export default router;

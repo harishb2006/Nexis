@@ -1,11 +1,12 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const Product = require("../model/product");
-const User = require("../model/user");
+import express from "express";
+import mongoose from "mongoose";
+import Product from "../model/product.js";
+import User from "../model/user.js";
+import { pupload } from "../multer.js";
+import path from 'path';
+import { isAuthenticatedUser } from '../middleware/auth.js';
+
 const router = express.Router();
-const { pupload } = require("../multer");
-const path = require('path');
-const { isAuthenticatedUser } = require('../middleware/auth');
 
 const validateProductData = (data) => {
   const errors = [];
@@ -282,4 +283,4 @@ router.put('/cartproduct/quantity', isAuthenticatedUser, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

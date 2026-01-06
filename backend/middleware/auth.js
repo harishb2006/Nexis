@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken');
- const User = require('../model/user');
- const ErrorHandler = require('../utils/ErrorHandler');
- const catchAsyncErrors = require('./catchAsyncErrors');
+import jwt from 'jsonwebtoken';
+import User from '../model/user.js';
+import ErrorHandler from '../utils/ErrorHandler.js';
+import catchAsyncErrors from './catchAsyncErrors.js';
 //  const JWT=process.env.JWT_SECRET;
 
  const isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
@@ -33,4 +33,4 @@ const jwt = require('jsonwebtoken');
      next();
  });
  
- module.exports = { isAuthenticatedUser };
+ export { isAuthenticatedUser };

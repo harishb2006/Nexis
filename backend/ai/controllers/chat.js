@@ -1,5 +1,5 @@
 import express from "express";
-import { generateAnswer } from "../services/chatService.js";
+import { generateAnswer } from "../services/chatServiceWithTools.js";
 import { ingestFromUploads } from "../services/documentIngestion.js";
 import catchAsyncErrors from "../../middleware/catchAsyncErrors.js";
 
@@ -33,6 +33,7 @@ router.post(
           question,
           answer: result.answer,
           sources: result.sources,
+          toolsUsed: result.toolsUsed,
           model: result.model,
           timestamp: result.timestamp,
         },

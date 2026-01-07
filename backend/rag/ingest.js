@@ -1,9 +1,9 @@
 import fs from "fs";
-import pdf from "pdf-parse";
 import mongoose from "mongoose";
 import { CohereClient } from "cohere-ai";
 import dotenv from "dotenv";
-import KnowledgeBase from "../model/knowledgeBase.js";
+import KnowledgeBase from "../ai/models/knowledgeBase.js";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
 dotenv.config();
 
@@ -15,40 +15,31 @@ const cohere = new CohereClient({
 const MONGO_URI = process.env.DB_URL;
 
 /**
- * Simple text chunker - splits text into overlapping chunks
- * @param {string} text - Text to chunk
- * @param {number} chunkSize - Size of each chunk (in characters)
- * @param {number} overlap - Overlap between chunks
- * @returns {string[]} Array of text chunks
+ * Initialize Langchain text splitter
  */
-function chunkText(text, chunkSize = 512, overlap = 50) {
-  const chunks = [];
-  let start = 0;
-
-  // Clean the text: remove extra whitespace and newlines
-  const cleanedText = text.replace(/\s+/g, ' ').trim();
-
-  while (start < cleanedText.length) {
-    const end = Math.min(start + chunkSize, cleanedText.length);
-    chunks.push(cleanedText.slice(start, end));
-    start += chunkSize - overlap;
-  }
-
-  return chunks.filter(chunk => chunk.trim().length > 0);
-}
+const textSplitter = new RecursiveCharacterTextSplitter({
+  chunkSize: 512,
+  chunkOverlap: 50,
+  separators: ["\n\n", "\n", " ", ""]
+});
 
 /**
- * Read file content (supports PDF and text files)
+ * Load and split document content
  * @param {string} filePath - Path to the file
- * @returns {Promise<string>} File content as text
+ * @returns {Promise<Array>} Array of document chunks
  */
-async function readFile(filePath) {
-  if (filePath.endsWith(".pdf")) {
-    const buffer = fs.readFileSync(filePath);
-    const data = await pdf(buffer);
-    return data.text;
-  }
-  return fs.readFileSync(filePath, "utf-8");
+async function loadAndSplitDocument(filePath) {
+  // For now, we'll support text files. PDF support can be added later with proper loader
+  const content = fs.readFileSync(filePath, "utf-8");
+  
+  const docs = [{
+    pageContent: content,
+    metadata: { source: filePath }
+  }];
+  
+  const splitDocs = await textSplitter.splitDocuments(docs);
+  
+  return splitDocs;
 }
 
 /**
@@ -72,9 +63,8 @@ async function ingest(filePath) {
     await mongoose.connect(MONGO_URI);
     console.log("✅ Connected to MongoDB");
 
-    console.log(`📄 Reading file: ${filePath}`);
-    const text = await readFile(filePath);
-    const chunks = chunkText(text);
+    console.log(`📄 Reading and splitting file: ${filePath}`);
+    const chunks = await loadAndSplitDocument(filePath);
 
     console.log(`🔹 Total chunks: ${chunks.length}`);
     console.log(`🔄 Creating embeddings with Cohere...`);
@@ -91,28 +81,30 @@ async function ingest(filePath) {
 
     for (let i = 0; i < chunks.length; i += batchSize) {
       const batch = chunks.slice(i, i + batchSize);
+      const batchTexts = batch.map(doc => doc.pageContent);
       
       console.log(`   Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(chunks.length / batchSize)}`);
       
       // Create embeddings using Cohere
       const embedResponse = await cohere.embed({
-        texts: batch,
+        texts: batchTexts,
         model: "embed-english-v3.0",
         inputType: "search_document",
         embeddingTypes: ["float"]
       });
 
       // Prepare documents for insertion
-      batch.forEach((chunk, idx) => {
+      batch.forEach((doc, idx) => {
         documents.push({
-          content: chunk,
+          content: doc.pageContent,
           embedding: embedResponse.embeddings.float[idx],
           source: filePath,
           chunkIndex: i + idx,
           metadata: {
             totalChunks: chunks.length,
             embeddingModel: "embed-english-v3.0",
-            embeddingDimensions: embedResponse.embeddings.float[idx].length
+            embeddingDimensions: embedResponse.embeddings.float[idx].length,
+            ...doc.metadata
           }
         });
       });
@@ -152,4 +144,4 @@ if (process.argv[2]) {
   process.exit(1);
 }
 
-export { ingest, chunkText, readFile };
+export { ingest, loadAndSplitDocument };

@@ -1,13 +1,15 @@
 import mongoose from "mongoose";
-import { CohereClient } from "cohere-ai";
 import dotenv from "dotenv";
+import { CohereEmbeddings } from "@langchain/cohere";
 import KnowledgeBase from '../models/knowledgeBase.js';
 
 dotenv.config();
 
-// Initialize Cohere client
-const cohere = new CohereClient({
-  token: process.env.COHERE_API_KEY
+// Initialize Langchain Cohere embeddings
+const embeddings = new CohereEmbeddings({
+  apiKey: process.env.COHERE_API_KEY,
+  model: "embed-english-v3.0",
+  inputType: "search_query"
 });
 
 const MONGO_URI = process.env.DB_URL;
@@ -67,17 +69,10 @@ export async function retrieveRelevantChunks(query, k = 3) {
   await connectDB();
 
   try {
-    // 1. Create embedding for the user query using Cohere
+    // 1. Create embedding for the user query using Langchain Cohere embeddings
     console.log(`🔍 Searching for: "${query}"`);
     
-    const embedResponse = await cohere.embed({
-      texts: [query],
-      model: "embed-english-v3.0",
-      inputType: "search_query",
-      embeddingTypes: ["float"]
-    });
-
-    const queryVector = embedResponse.embeddings.float[0];
+    const queryVector = await embeddings.embedQuery(query);
     console.log(`📊 Query embedding created (${queryVector.length} dimensions)`);
 
     // 2. Retrieve all documents from knowledge base

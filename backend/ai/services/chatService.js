@@ -1,6 +1,8 @@
 import { Cerebras } from "@cerebras/cerebras_cloud_sdk";
 import { retrieveRelevantChunks } from "./retriever.js";
 import dotenv from "dotenv";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { StringOutputParser } from "@langchain/core/output_parsers";
 
 dotenv.config();
 
@@ -9,27 +11,9 @@ const cerebras = new Cerebras({
   apiKey: process.env.CEREBRAS_API_KEY,
 });
 
-/**
- * Generate AI response using RAG + Cerebras LLM
- * @param {string} userQuestion - User's question
- * @param {Array} conversationHistory - Previous messages (optional)
- * @returns {Promise<Object>} AI response with context
- */
-export async function generateAnswer(userQuestion, conversationHistory = []) {
-  try {
-    // Step 1: Retrieve relevant context from knowledge base
-    console.log("🔍 Retrieving relevant context...");
-    const relevantChunks = await retrieveRelevantChunks(userQuestion, 3);
-
-    // Build context from retrieved chunks
-    const context = relevantChunks
-      .map((chunk, idx) => `[Context ${idx + 1}]:\n${chunk.content}`)
-      .join("\n\n");
-
-    console.log(`📚 Found ${relevantChunks.length} relevant chunks`);
-
-    // Step 2: Build system prompt
-    const systemPrompt = `You are a helpful customer support assistant for an e-commerce store called ShopHub.
+// Define Langchain prompt template
+const promptTemplate = ChatPromptTemplate.fromMessages([
+  ["system", `You are a helpful customer support assistant for an e-commerce store called ShopHub.
 
 Your job is to answer customer questions using ONLY the information provided in the context below. 
 
@@ -41,13 +25,42 @@ IMPORTANT RULES:
 - Format your answers clearly with bullet points when listing multiple items
 
 CONTEXT:
-${context}
+{context}
 
-Remember: Only use the information from the context above to answer questions.`;
+Remember: Only use the information from the context above to answer questions.`],
+  ["human", "{question}"]
+]);
 
-    // Step 3: Build message history
+const outputParser = new StringOutputParser();
+
+/**
+ * Generate AI response using RAG + Cerebras LLM
+ * @param {string} userQuestion - User's question
+ * @param {Array} conversationHistory - Previous messages (optional)
+ * @returns {Promise<Object>} AI response with context
+ */
+export async function generateAnswer(userQuestion, conversationHistory = []) {
+  try {
+    // Step 1: Retrieve relevant context from knowledge base using Langchain retriever
+    console.log("🔍 Retrieving relevant context...");
+    const relevantChunks = await retrieveRelevantChunks(userQuestion, 3);
+
+    // Build context from retrieved chunks
+    const context = relevantChunks
+      .map((chunk, idx) => `[Context ${idx + 1}]:\n${chunk.content}`)
+      .join("\n\n");
+
+    console.log(`📚 Found ${relevantChunks.length} relevant chunks`);
+
+    // Step 2: Format prompt using Langchain template
+    const formattedPrompt = await promptTemplate.format({
+      context: context,
+      question: userQuestion
+    });
+
+    // Step 3: Build message history (still using Cerebras directly for completion)
     const messages = [
-      { role: "system", content: systemPrompt },
+      { role: "system", content: formattedPrompt },
       ...conversationHistory,
       { role: "user", content: userQuestion },
     ];

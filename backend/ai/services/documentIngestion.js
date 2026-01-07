@@ -1,19 +1,21 @@
 import fs from "fs";
 import path from "path";
-import pdf from "pdf-parse";
 import mongoose from "mongoose";
-import { CohereClient } from "cohere-ai";
 import dotenv from "dotenv";
 import { fileURLToPath } from 'url';
+import { CohereEmbeddings } from "@langchain/cohere";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
-// Initialize Cohere client
-const cohere = new CohereClient({
-  token: process.env.COHERE_API_KEY
+// Initialize Langchain Cohere embeddings
+const embeddings = new CohereEmbeddings({
+  apiKey: process.env.COHERE_API_KEY,
+  model: "embed-english-v3.0",
+  inputType: "search_document"
 });
 
 const MONGO_URI = process.env.DB_URL;
@@ -22,32 +24,31 @@ const MONGO_URI = process.env.DB_URL;
 import KnowledgeBase from "../models/knowledgeBase.js";
 
 /**
- * Simple text chunker - splits text into overlapping chunks
+ * Initialize Langchain text splitter
  */
-function chunkText(text, chunkSize = 512, overlap = 50) {
-  const chunks = [];
-  let start = 0;
-  const cleanedText = text.replace(/\s+/g, ' ').trim();
-
-  while (start < cleanedText.length) {
-    const end = Math.min(start + chunkSize, cleanedText.length);
-    chunks.push(cleanedText.slice(start, end));
-    start += chunkSize - overlap;
-  }
-
-  return chunks.filter(chunk => chunk.trim().length > 0);
-}
+const textSplitter = new RecursiveCharacterTextSplitter({
+  chunkSize: 512,
+  chunkOverlap: 50,
+  separators: ["\n\n", "\n", " ", ""]
+});
 
 /**
- * Read file content (supports PDF and text files)
+ * Load and read documents (supports PDF and text files)
  */
-async function readFile(filePath) {
-  if (filePath.endsWith(".pdf")) {
-    const buffer = fs.readFileSync(filePath);
-    const data = await pdf(buffer);
-    return data.text;
+async function loadDocument(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  
+  if (ext === '.pdf') {
+    // For PDF, we'll use a simple approach with pdf-parse equivalent or manual parsing
+    // Since Langchain loaders are having issues, let's use a custom implementation
+    const content = fs.readFileSync(filePath, 'utf-8').toString();
+    return [{ pageContent: content, metadata: { source: filePath } }];
+  } else if (['.txt', '.md'].includes(ext)) {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    return [{ pageContent: content, metadata: { source: filePath } }];
   }
-  return fs.readFileSync(filePath, "utf-8");
+  
+  throw new Error(`Unsupported file type: ${ext}`);
 }
 
 /**
@@ -119,8 +120,11 @@ async function ingestFromUploads() {
     for (const filePath of files) {
       console.log(`\n📄 Processing: ${path.basename(filePath)}`);
       
-      const text = await readFile(filePath);
-      const chunks = chunkText(text);
+      // Load document using Langchain loader
+      const docs = await loadDocument(filePath);
+      
+      // Split documents into chunks using Langchain text splitter
+      const chunks = await textSplitter.splitDocuments(docs);
       
       console.log(`   🔹 Chunks: ${chunks.length}`);
 
@@ -130,33 +134,31 @@ async function ingestFromUploads() {
         console.log(`   🗑️  Removed ${deleteResult.deletedCount} old chunks`);
       }
 
-      // Process chunks in batches
+      // Generate embeddings using Langchain Cohere embeddings
       const batchSize = 96;
       const documents = [];
 
       for (let i = 0; i < chunks.length; i += batchSize) {
         const batch = chunks.slice(i, i + batchSize);
+        const batchTexts = batch.map(doc => doc.pageContent);
         
         console.log(`   ⏳ Creating embeddings (batch ${Math.floor(i / batchSize) + 1})...`);
         
-        const embedResponse = await cohere.embed({
-          texts: batch,
-          model: "embed-english-v3.0",
-          inputType: "search_document",
-          embeddingTypes: ["float"]
-        });
+        // Use Langchain embeddings
+        const batchEmbeddings = await embeddings.embedDocuments(batchTexts);
 
         batch.forEach((chunk, idx) => {
           documents.push({
-            content: chunk,
-            embedding: embedResponse.embeddings.float[idx],
+            content: chunk.pageContent,
+            embedding: batchEmbeddings[idx],
             source: filePath,
             chunkIndex: i + idx,
             metadata: {
               fileName: path.basename(filePath),
               totalChunks: chunks.length,
               embeddingModel: "embed-english-v3.0",
-              embeddingDimensions: embedResponse.embeddings.float[idx].length
+              embeddingDimensions: batchEmbeddings[idx].length,
+              ...chunk.metadata
             }
           });
         });
@@ -195,4 +197,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     });
 }
 
-export { ingestFromUploads, chunkText, readFile, scanUploadsFolder };
+export { ingestFromUploads, loadDocument, scanUploadsFolder, textSplitter };

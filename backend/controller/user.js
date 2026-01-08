@@ -61,16 +61,19 @@ router.post(
 
   router.post("/login", catchAsyncErrors(async (req, res, next) => {
     console.log("Logging in user...");
+    console.log("Request body:", req.body);
     const { email, password } = req.body;
+    console.log("Email:", email, "Password:", password);
     if (!email || !password) {
         return next(new ErrorHandler("Please provide email and password", 400));
     }
     const user = await User.findOne({ email }).select("+password");
+    console.log("User found:", user ? "Yes" : "No");
     if (!user) {
         return next(new ErrorHandler("Invalid Email or Password", 401));
     }
     const isPasswordMatched = await bcrypt.compare(password, user.password);
-    console.log(isPasswordMatched)
+    console.log("Password matched:", isPasswordMatched)
     if (!isPasswordMatched) {
         return next(new ErrorHandler("Invalid Email or Password", 401));
     }
@@ -84,10 +87,8 @@ router.post(
   // Set token in an HttpOnly cookie
   res.cookie("token", token, {
       httpOnly: true,
-      // secure: process.env.NODE_ENV === "production", // use true in production
-      // sameSite: "Strict",
-      secure: true, // Must be true for cross-site cookies
-      sameSite: "None", // Important for cross-site cookies
+      secure: process.env.NODE_ENV === "production", // use true only in production with HTTPS
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // None for production, Lax for development
       maxAge: 3600000, // 1 hour
   });
 

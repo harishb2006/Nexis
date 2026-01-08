@@ -14,26 +14,52 @@ const cerebras = new Cerebras({
  * Convert LangChain tool to format Cerebras understands
  */
 function convertToolsForCerebras(tools) {
-  return tools.map(tool => ({
-    type: "function",
-    function: {
-      name: tool.name,
-      description: tool.description,
-      parameters: {
-        type: "object",
-        properties: Object.entries(tool.schema.shape).reduce((acc, [key, zodSchema]) => {
-          acc[key] = {
-            type: zodSchema._def.typeName === "ZodString" ? "string" : "number",
-            description: zodSchema.description || ""
-          };
-          return acc;
-        }, {}),
-        required: Object.keys(tool.schema.shape).filter(
-          key => !tool.schema.shape[key].isOptional()
-        )
+  return tools.map(tool => {
+    const parameters = {
+      type: "object",
+      properties: {},
+      required: []
+    };
+
+    Object.entries(tool.schema.shape).forEach(([key, zodSchema]) => {
+      const typeName = zodSchema._def.typeName;
+      
+      // Handle enums
+      if (typeName === "ZodEnum") {
+        parameters.properties[key] = {
+          type: "string",
+          enum: zodSchema._def.values,
+          description: zodSchema.description || ""
+        };
       }
-    }
-  }));
+      // Handle other types
+      else if (typeName === "ZodString") {
+        parameters.properties[key] = {
+          type: "string",
+          description: zodSchema.description || ""
+        };
+      } else if (typeName === "ZodNumber") {
+        parameters.properties[key] = {
+          type: "number",
+          description: zodSchema.description || ""
+        };
+      }
+
+      // Check if required
+      if (!zodSchema.isOptional()) {
+        parameters.required.push(key);
+      }
+    });
+
+    return {
+      type: "function",
+      function: {
+        name: tool.name,
+        description: tool.description,
+        parameters
+      }
+    };
+  });
 }
 
 /**

@@ -1,0 +1,716 @@
+COMPREHENSIVE PAYMENT & SECURITY POLICY
+
+Shop with confidence! We accept multiple payment methods and protect every transaction with bank-level security.
+
+═══════════════════════════════════════════════════════════════
+
+1. ACCEPTED PAYMENT METHODS
+
+Credit & Debit Cards:
+✓ Visa, Mastercard, American Express, Discover
+✓ Maestro, JCB (international cards)
+✓ Prepaid cards with credit card logos
+✓ HSA/FSA cards for eligible health items
+• Processed securely through encrypted payment gateway
+• No card information stored on our servers
+• 3D Secure authentication for added protection
+
+Digital Wallets:
+✓ PayPal (including PayPal Credit)
+✓ Apple Pay (iPhone, iPad, Mac, Apple Watch)
+✓ Google Pay (Android devices)
+✓ Samsung Pay
+✓ Venmo
+• One-tap checkout
+• No need to enter card details
+• Biometric authentication supported
+• Instant payment confirmation
+
+Buy Now, Pay Later Options:
+✓ Affirm (pay in 4 or monthly installments)
+✓ Klarna (split payment into 4)
+✓ Afterpay (4 interest-free payments)
+✓ PayPal Pay in 4
+• Instant approval at checkout
+• No hard credit check
+• 0% APR on select plans
+• Flexible payment schedules
+• Eligibility: Orders $50-$17,500
+
+Bank Transfers & ACH:
+✓ Direct bank account payments
+✓ Available for orders over $500
+✓ Lower processing fees (we pass savings to you!)
+✓ 2-3 business day processing
+✓ Requires bank verification
+
+Gift Cards & Store Credit:
+✓ Physical and digital gift cards
+✓ Store credit from returns/exchanges
+✓ Promotional credits and rewards
+✓ Can be combined with other payment methods
+✓ Check balance anytime online
+
+Cryptocurrency (Coming Soon):
+• Bitcoin, Ethereum, USDC
+• Instant conversion to USD at checkout
+• No extra fees
+• Secure blockchain transactions
+
+International Payment Methods:
+✓ Alipay (China)
+✓ WeChat Pay (China)
+✓ iDEAL (Netherlands)
+✓ Giropay (Germany)
+✓ SEPA transfers (Europe)
+✓ 150+ local payment methods worldwide
+
+What We DON'T Accept:
+✗ Personal checks
+✗ Money orders
+✗ Cash on delivery (COD)
+✗ Wire transfers (except pre-approved wholesale accounts)
+✗ Cryptocurrency directly (until official launch)
+
+═══════════════════════════════════════════════════════════════
+
+2. PAYMENT SECURITY
+
+How We Protect You:
+
+256-Bit SSL Encryption:
+• Bank-level encryption on all pages
+• Your payment data is encrypted end-to-end
+• Look for padlock icon in browser
+• All credit card info encrypted in transit
+
+PCI DSS Level 1 Compliance:
+• Highest level of payment security certification
+• Regular security audits by independent assessors
+• Secure card data handling practices
+• Industry-standard security protocols
+
+Tokenization:
+• We never store your actual card numbers
+• Tokens used instead of real card data
+• Useless to hackers even if intercepted
+• Your financial data stays with payment processor
+
+3D Secure Authentication:
+• Extra verification layer for card payments
+• Text message or app confirmation
+• Reduces fraud by 70%+
+• Required for high-value orders
+
+Fraud Detection AI:
+• Real-time transaction monitoring
+• Unusual activity flagged instantly
+• Machine learning identifies fraud patterns
+• 99.9% fraud detection accuracy
+
+What We Never Do:
+✗ Store complete card numbers
+✗ See your CVV/security code (goes directly to processor)
+✗ Share payment info with third parties
+✗ Email or call asking for payment details
+✗ Store passwords in plain text
+
+Your Responsibilities:
+✓ Use secure internet connection (avoid public WiFi for payments)
+✓ Keep login credentials private
+✓ Monitor account for unauthorized charges
+✓ Report suspicious activity immediately
+✓ Use strong, unique passwords
+
+═══════════════════════════════════════════════════════════════
+
+3. PAYMENT PROCESSING & AUTHORIZATION
+
+When Your Card is Charged:
+
+Pre-Authorization Hold:
+• Card authorized when order placed
+• Funds held but not yet captured
+• Appears as "pending" on your statement
+• Ensures card is valid and has funds
+
+Actual Charge:
+• Processed when item ships
+• Hold converts to actual charge
+• Separate charges if items ship separately
+• You'll receive email confirmation
+
+If Authorization Fails:
+• You'll be notified immediately
+• Order automatically cancelled if not resolved
+• No charge if authorization fails
+• Contact your bank to resolve
+
+Pre-Orders & Backorders:
+• Charged when item ships, not when ordered
+• Authorization renewed if delay exceeds 7 days
+• Can cancel anytime before shipment
+• Email notification before charging
+
+Digital Products:
+• Charged immediately upon purchase
+• Instant access after payment clears
+• Non-refundable after download/activation
+
+Subscriptions:
+• First payment when subscription starts
+• Recurring charges on renewal date
+• Email reminder 3 days before charge
+• Cancel anytime before next billing
+
+═══════════════════════════════════════════════════════════════
+
+4. BILLING & INVOICES
+
+Order Invoice:
+• Emailed immediately after order placed
+• Shows items, prices, taxes, shipping
+• Payment method and billing address
+• Downloadable PDF format
+
+Shipping Confirmation:
+• Sent when order ships
+• Updated invoice with tracking
+• Final charges (if adjusted)
+• Estimated delivery date
+
+Digital Receipts:
+• All receipts available in your account
+• View and download anytime
+• Organized by order date
+• Print-friendly format
+
+Business Invoices:
+• Net-30 terms for approved B2B accounts
+• Detailed itemization for accounting
+• Purchase order numbers supported
+• Monthly statements available
+
+Tax Information:
+• Sales tax collected where required by law
+• Tax rate based on shipping address
+• VAT included for international orders
+• Tax ID/resale certificates accepted (wholesale)
+
+═══════════════════════════════════════════════════════════════
+
+5. PRICING & CURRENCY
+
+Price Display:
+• All prices in USD unless specified
+• Includes currency symbol: $
+• Taxes calculated at checkout
+• Final price shown before payment
+
+International Customers:
+• Prices shown in USD by default
+• Can select 40+ currencies at checkout
+• Real-time exchange rates applied
+• No hidden currency conversion fees
+• Final charge in your local currency
+
+Price Accuracy:
+• Prices subject to change without notice
+• Price confirmed at checkout
+• Order confirmation shows final price
+• We honor price errors on orders placed
+
+Tax Collection:
+• Sales tax in states where we have nexus
+• VAT/GST for international orders
+• Tax-exempt? Upload certificate during checkout
+• Taxes calculated on order total (including shipping)
+
+Shipping Costs:
+• Calculated based on weight and destination
+• Shown before payment
+• Free shipping promotions clearly marked
+• No surprise fees
+
+Duties & Import Fees (International):
+• May apply to international orders
+• Your responsibility (not included in price)
+• Customs determines fees
+• Paid directly to customs/carrier
+
+═══════════════════════════════════════════════════════════════
+
+6. PROMOTIONAL CODES & DISCOUNTS
+
+How to Use Promo Codes:
+1. Add items to cart
+2. Enter code in "Promo Code" field at checkout
+3. Click "Apply"
+4. Discount reflects in order total
+5. Complete purchase
+
+Promo Code Rules:
+• One code per order (unless stated otherwise)
+• Cannot be combined with other codes
+• May not apply to sale items (unless specified)
+• Valid while supplies last
+• Expiration dates enforced
+• Case-sensitive (use EXACTLY as shown)
+
+Automatic Discounts:
+• Applied automatically at checkout
+• No code needed
+• Free shipping thresholds
+• Loyalty member discounts
+• Bundle deals
+• Volume discounts
+
+Discount Stacking:
+Usually Cannot Combine:
+✗ Multiple promo codes
+✗ Promo code + sale price (unless allowed)
+
+Can Be Combined:
+✓ Loyalty member discount + promo code
+✓ Automatic discount + manual code (sometimes)
+✓ Gift card + promo code
+✓ Student discount + sale prices
+
+Price Adjustments:
+• If price drops within 14 days, we'll credit difference
+• Automatic for loyalty members
+• Contact customer service for adjustment
+• Apply to new orders as store credit
+
+═══════════════════════════════════════════════════════════════
+
+7. REFUNDS & PAYMENT REVERSALS
+
+Refund Timeline:
+
+Credit/Debit Cards:
+• Refund issued: 1-2 business days after approval
+• Bank processing: 5-7 business days
+• Total time: 5-10 business days
+• Appears as credit on statement
+
+PayPal:
+• Instant to PayPal balance
+• 3-5 days to linked bank account
+• Notification email sent immediately
+
+Buy Now Pay Later (Affirm, Klarna):
+• Refund to original payment plan
+• Remaining payments adjusted or cancelled
+• Contact BNPL provider for details
+• Usually processed within 3-5 days
+
+Digital Wallets:
+• Apple Pay/Google Pay: 5-7 days
+• Returned to original card
+• Notification through wallet app
+
+Store Credit:
+• Instant refund to account
+• Available immediately
+• Check balance in account dashboard
+• Never expires
+
+Gift Cards (if return):
+• New gift card issued
+• Email or physical card option
+• Same value as paid amount
+• Can use immediately
+
+Partial Refunds:
+• For partial returns or adjustments
+• Prorated shipping refund (if applicable)
+• Promo code adjustments calculated
+• Clear breakdown in refund email
+
+Failed Refunds:
+• If card is expired/closed, contact us
+• Can issue check or store credit instead
+• Bank account required for check
+• Processing time: 2-3 weeks for checks
+
+═══════════════════════════════════════════════════════════════
+
+8. CHARGEBACKS & DISPUTES
+
+Before Filing Chargeback:
+
+PLEASE Contact Us First:
+• We resolve 99% of issues immediately
+• Chargebacks harm your account standing
+• May result in account suspension
+• We can often solve problems faster than banks
+
+Valid Reasons to Contact Us:
+• Unauthorized charge
+• Didn't receive order
+• Item significantly different than described
+• Charged wrong amount
+• Duplicate charge
+• Defective item not resolved
+
+Our Resolution Process:
+1. Contact us with concern
+2. Immediate investigation (usually within 24 hours)
+3. Refund or replacement offered
+4. Issue resolved - no chargeback needed
+
+If You File Chargeback:
+• Your account may be suspended pending investigation
+• We'll respond to bank with evidence
+• If chargeback is invalid, you may be liable for fees
+• Future orders may require additional verification
+• Multiple chargebacks lead to permanent ban
+
+Fraudulent Chargeback:
+• After receiving product, filing chargeback is fraud
+• We pursue legal action for fraud
+• Evidence provided to bank and authorities
+• Criminal charges possible
+
+Legitimate Disputes:
+• We fully cooperate with valid chargebacks
+• Provide full refund if we're at fault
+• No penalty if genuine issue
+• Account remains in good standing
+
+═══════════════════════════════════════════════════════════════
+
+9. PAYMENT ISSUES & TROUBLESHOOTING
+
+Common Payment Failures:
+
+"Payment Declined" - Possible Reasons:
+• Insufficient funds
+• Incorrect card details (number, CVV, expiration)
+• Card expired
+• Address mismatch (billing vs. card on file)
+• Bank fraud prevention triggered
+• Card not activated for online purchases
+• Daily spending limit reached
+
+How to Resolve:
+1. Verify card details are correct
+2. Check with your bank
+3. Try different payment method
+4. Contact us if problem persists
+5. Use PayPal as alternative
+
+"Address Verification Failed":
+• Billing address must match card exactly
+• Include apartment/unit numbers
+• Use address format from card statement
+• Try entering address manually vs. autofill
+• Contact card issuer to verify address on file
+
+"3D Secure Failed":
+• Check phone for verification code
+• Ensure pop-ups not blocked
+• Try different browser
+• Contact bank to enable 3D Secure
+• Use alternative payment method
+
+"Transaction Timeout":
+• Check if charge went through (don't retry immediately)
+• Wait 15 minutes, then try again
+• Clear browser cache and cookies
+• Try different browser or device
+• Contact us to verify no duplicate orders
+
+International Card Issues:
+• Enable international transactions with bank
+• Check currency conversion settings
+• Verify card works for online purchases
+• Some banks block foreign merchants initially
+• Call bank to whitelist our merchant name
+
+═══════════════════════════════════════════════════════════════
+
+10. SAVE PAYMENT METHODS
+
+Saved Cards (Optional):
+• Securely save cards for faster checkout
+• Tokenized (actual numbers not stored)
+• Delete anytime from account settings
+• Set default payment method
+• Requires account login to use
+
+Security Features:
+• Password required to view saved cards
+• Last 4 digits only shown
+• CVV never saved (must enter each time)
+• 2-factor authentication available
+• Email alert when new card added
+
+Auto-Pay for Subscriptions:
+• Set primary card for recurring billing
+• Backup payment method supported
+• Email reminder before each charge
+• Update payment info anytime
+• Cancel auto-pay without canceling subscription
+
+Managing Saved Payments:
+• Add, edit, or remove in account settings
+• Update expiration dates easily
+• No need to re-enter for each order
+• Works across all devices when logged in
+
+═══════════════════════════════════════════════════════════════
+
+11. BUSINESS & WHOLESALE PAYMENT OPTIONS
+
+Net Terms (Approved Businesses):
+• Net-30, Net-60 available
+• Credit application required
+• Minimum annual volume: $10,000
+• Personal guarantee may be needed
+• Dedicated account manager
+
+Purchase Orders:
+• Upload PO at checkout
+• Reference PO number on all invoices
+• Email copy to accounts payable
+• Track PO status in B2B portal
+
+ACH/Wire Transfers:
+• Lower processing fees
+• Available for orders over $500
+• Bank details provided after order
+• 2-3 day processing time
+• Confirmation required before shipping
+
+Bulk Payment Discounts:
+• 2% discount for ACH payments
+• 1% discount for wire transfers
+• Monthly invoice consolidation
+• Volume pricing tiers available
+
+Tax Exemption:
+• Upload resale certificate during checkout
+• Tax-exempt status verified
+• Certificate must be current and valid
+• Renewal reminder sent annually
+
+═══════════════════════════════════════════════════════════════
+
+12. PAYMENT PLANS & FINANCING
+
+Buy Now, Pay Later Details:
+
+Affirm:
+• Split into 4 payments or monthly plans
+• 0% APR on select items
+• Instant approval (soft credit check)
+• Borrow $50 - $17,500
+• Manage payments in Affirm app
+
+Klarna:
+• Pay in 4 interest-free installments
+• Every 2 weeks automatic payment
+• $35 minimum purchase
+• No credit impact
+• Instant approval
+
+Afterpay:
+• 4 equal payments every 2 weeks
+• 0% interest if paid on time
+• $50 - $2,000 purchase range
+• First payment at purchase
+• Late fees may apply
+
+PayPal Credit:
+• 6 months no interest on $99+
+• Ongoing credit line
+• Use for all purchases
+• Subject to credit approval
+• APR applies after promo period
+
+Layaway (Seasonal):
+• Available for holiday shopping
+• Pay over 8-12 weeks
+• $25 deposit to start
+• No interest or fees
+• Item ships when paid in full
+
+═══════════════════════════════════════════════════════════════
+
+13. GIFT CARDS & STORE CREDIT
+
+Purchasing Gift Cards:
+• Denominations: $10 - $500
+• Physical cards (mailed) or e-gift cards (instant email)
+• Custom amounts available
+• Personalized message included
+• No expiration date or fees
+
+Using Gift Cards:
+• Enter code at checkout
+• Balance applied to order total
+• Remaining balance saved for future use
+• Combine multiple gift cards
+• Use with other payment methods
+
+Checking Balance:
+• Online: nexisstore.com/gift-card-balance
+• During checkout (auto-shows balance)
+• Call customer service
+• In-store at register
+
+Store Credit:
+• From returns, promotions, customer service
+• Applied automatically at checkout when logged in
+• No expiration
+• Cannot be transferred or sold
+• Check balance in account dashboard
+
+Gift Card Terms:
+• Treated as cash
+• Not replaceable if lost or stolen
+• Valid online and in stores
+• Cannot be redeemed for cash (except where required by law)
+• Cannot be used to buy other gift cards
+
+═══════════════════════════════════════════════════════════════
+
+14. SUBSCRIPTION BILLING
+
+How Subscription Billing Works:
+
+Initial Setup:
+• Choose subscription frequency (monthly, quarterly, annually)
+• Save payment method
+• Set delivery schedule
+• Enjoy discounted pricing (10-15% off)
+
+Recurring Charges:
+• Auto-charged on renewal date
+• Email reminder 3 days before charge
+• Amount may vary (price changes, added items)
+• Failed payment = 3 retry attempts over 7 days
+
+Managing Subscriptions:
+• Pause, skip, or cancel anytime
+• Change frequency or products
+• Update payment method
+• Modify delivery address
+• No cancellation fees
+
+Failed Payment Recovery:
+• Email + SMS notification
+• Update payment method in account
+• 7-day grace period before cancellation
+• No late fees or penalties
+• Reactivate easily after payment update
+
+Subscription Benefits:
+✓ 10-15% discount on all items
+✓ Free shipping always
+✓ Priority processing
+✓ Flexible scheduling
+✓ Cancel anytime
+
+═══════════════════════════════════════════════════════════════
+
+15. FRAUD PREVENTION
+
+Protecting Yourself:
+
+Red Flags to Watch For:
+🚩 Emails asking for payment info (we NEVER do this)
+🚩 Calls requesting credit card numbers
+🚩 Suspicious account activity
+🚩 Orders you didn't place
+🚩 Unfamiliar charges
+
+What to Do If Fraud Suspected:
+1. Change your password immediately
+2. Contact us at fraud@nexisstore.com
+3. Call your bank/card issuer
+4. Monitor your account for unauthorized activity
+5. File police report if necessary
+
+Our Fraud Prevention:
+• Real-time transaction monitoring
+• Velocity checks (rapid repeat orders)
+• Geolocation verification
+• Device fingerprinting
+• Behavioral analytics
+• Manual review of suspicious orders
+
+Verification Requirements:
+For your protection, we may request:
+• Phone verification
+• ID upload (for high-value orders)
+• Alternative payment method
+• Billing address confirmation
+• Answers to security questions
+
+Your Account Security:
+✓ Use strong, unique password
+✓ Enable 2-factor authentication
+✓ Don't share login credentials
+✓ Log out on shared devices
+✓ Monitor account regularly
+✓ Report suspicious activity immediately
+
+═══════════════════════════════════════════════════════════════
+
+PAYMENT FAQS
+
+Q: When will I be charged?
+A: Authorization when ordered, actual charge when shipped. Pre-orders charged at shipping.
+
+Q: Can I use multiple payment methods?
+A: Yes! Split between gift card and card, or PayPal and credit card.
+
+Q: What if my card is declined?
+A: Verify details, check with bank, try different payment method, or contact us.
+
+Q: Can I change payment method after ordering?
+A: Before shipping, yes. Contact us immediately. After shipping, no.
+
+Q: Do you offer payment plans?
+A: Yes! Affirm, Klarna, Afterpay, PayPal Credit available at checkout.
+
+Q: Are my payment details secure?
+A: Absolutely. Bank-level encryption, PCI-compliant, tokenized storage.
+
+Q: How long for refunds?
+A: 5-7 business days for cards, 3-5 days PayPal, instant for store credit.
+
+Q: What if I'm charged twice?
+A: Contact us immediately - we'll refund duplicate charge within 24 hours.
+
+Q: Can I pay cash?
+A: No cash payments accepted online. In-store accepts cash.
+
+Q: Do you accept international cards?
+A: Yes! Most international cards accepted. Enable international transactions with your bank.
+
+═══════════════════════════════════════════════════════════════
+
+CONTACT PAYMENT SUPPORT
+
+Payment Questions or Issues?
+📧 Email: payments@nexisstore.com
+📞 Phone: 1-800-NEXIS-PAY (1-800-639-4729)
+💬 Live Chat: Available 24/7
+🔒 Fraud: fraud@nexisstore.com (immediate response)
+
+Business & Wholesale:
+📧 Email: wholesale@nexisstore.com
+📞 Phone: 1-800-NEXIS-B2B
+
+Payment Support Hours:
+24/7 for urgent payment issues
+Standard support: Mon-Fri 8 AM - 10 PM EST
+
+We're here to ensure your payment experience is smooth, secure, and hassle-free!
+
+Last Updated: January 2026
+Policy Version: 2.0

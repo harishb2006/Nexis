@@ -2,31 +2,34 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { ShoppingCart, User, LogOut, Menu, X } from 'lucide-react';
+import { ShoppingCart, User, LogOut, Menu, X, Shield } from 'lucide-react';
+import { logout } from '../../store/userActions';
 
 const NavBar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const email = useSelector((state) => state.user.email);
+    const user = useSelector((state) => state.user);
+    const email = user.email;
+    const isAdmin = user.role === 'admin';
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);
     };
 
     const handleLogout = () => {
-        dispatch({ type: 'SET_EMAIL', payload: '' });
+        dispatch(logout());
         navigate('/login');
     };
 
     return (
-        <nav className="bg-gradient-to-r from-orange-50 to-amber-50 shadow-md border-b border-orange-100">
+        <nav className="bg-white shadow-sm border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
                     <div className="flex items-center">
                         <NavLink to="/" className="flex items-center space-x-2">
-                            <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
+                            <div className="w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center">
                                 <span className="text-white font-bold text-xl">S</span>
                             </div>
                             <span className="text-xl font-bold text-gray-800">shophub</span>
@@ -40,8 +43,8 @@ const NavBar = () => {
                             end
                             className={({ isActive }) =>
                                 isActive
-                                    ? "text-orange-600 font-semibold transition-colors duration-200"
-                                    : "text-gray-700 hover:text-orange-600 transition-colors duration-200"
+                                    ? "text-slate-800 font-semibold transition-colors duration-200"
+                                    : "text-gray-600 hover:text-slate-800 transition-colors duration-200"
                             }
                         >
                             Home
@@ -50,8 +53,8 @@ const NavBar = () => {
                             to="/my-products"
                             className={({ isActive }) =>
                                 isActive
-                                    ? "text-orange-600 font-semibold transition-colors duration-200"
-                                    : "text-gray-700 hover:text-orange-600 transition-colors duration-200"
+                                    ? "text-slate-800 font-semibold transition-colors duration-200"
+                                    : "text-gray-600 hover:text-slate-800 transition-colors duration-200"
                             }
                         >
                             Shop
@@ -60,18 +63,31 @@ const NavBar = () => {
                             to="/myorders"
                             className={({ isActive }) =>
                                 isActive
-                                    ? "text-orange-600 font-semibold transition-colors duration-200"
-                                    : "text-gray-700 hover:text-orange-600 transition-colors duration-200"
+                                    ? "text-slate-800 font-semibold transition-colors duration-200"
+                                    : "text-gray-600 hover:text-slate-800 transition-colors duration-200"
                             }
                         >
                             Orders
                         </NavLink>
+                        {isAdmin && (
+                            <NavLink
+                                to="/admin/dashboard"
+                                className={({ isActive }) =>
+                                    isActive
+                                        ? "flex items-center gap-2 text-slate-800 font-semibold transition-colors duration-200 bg-emerald-50 px-3 py-1.5 rounded-lg"
+                                        : "flex items-center gap-2 text-emerald-700 hover:text-emerald-800 transition-colors duration-200 hover:bg-emerald-50 px-3 py-1.5 rounded-lg"
+                                }
+                            >
+                                <Shield size={18} />
+                                Admin
+                            </NavLink>
+                        )}
                         <NavLink
                             to="/profile"
                             className={({ isActive }) =>
                                 isActive
-                                    ? "text-orange-600 font-semibold transition-colors duration-200"
-                                    : "text-gray-700 hover:text-orange-600 transition-colors duration-200"
+                                    ? "text-slate-800 font-semibold transition-colors duration-200"
+                                    : "text-gray-600 hover:text-slate-800 transition-colors duration-200"
                             }
                         >
                             Contact
@@ -80,19 +96,22 @@ const NavBar = () => {
 
                     {/* Right Side - Cart & User */}
                     <div className="flex items-center space-x-4">
-                        <NavLink to="/cart" className="flex items-center space-x-2 text-gray-700 hover:text-orange-600">
+                        <NavLink to="/cart" className="flex items-center space-x-2 text-gray-600 hover:text-slate-800">
                             <ShoppingCart size={20} />
                         </NavLink>
                         
                         {email ? (
                             <div className="flex items-center space-x-3">
-                                <NavLink to="/profile" className="flex items-center space-x-2 text-gray-700 hover:text-orange-600">
+                                <NavLink to="/profile" className="flex items-center space-x-2 text-gray-600 hover:text-slate-800">
                                     <User size={20} />
-                                    <span className="hidden lg:inline text-sm">{email.split('@')[0]}</span>
+                                    <span className="hidden lg:inline text-sm">
+                                        {email.split('@')[0]}
+                                        {isAdmin && <span className="ml-1 text-xs text-emerald-600 font-bold">(Admin)</span>}
+                                    </span>
                                 </NavLink>
                                 <button
                                     onClick={handleLogout}
-                                    className="flex items-center space-x-1 text-gray-700 hover:text-orange-600 transition-colors"
+                                    className="flex items-center space-x-1 text-gray-600 hover:text-slate-800 transition-colors"
                                 >
                                     <LogOut size={18} />
                                     <span className="hidden lg:inline text-sm">Logout</span>
@@ -101,7 +120,7 @@ const NavBar = () => {
                         ) : (
                             <NavLink
                                 to="/login"
-                                className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-200"
+                                className="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-all duration-200"
                             >
                                 Login
                             </NavLink>
@@ -110,7 +129,7 @@ const NavBar = () => {
                         {/* Mobile menu button */}
                         <button
                             onClick={toggleMenu}
-                            className="md:hidden text-gray-700 hover:text-orange-600"
+                            className="md:hidden text-gray-600 hover:text-slate-800"
                         >
                             {isOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
@@ -120,15 +139,15 @@ const NavBar = () => {
 
             {/* Mobile Menu */}
             {isOpen && (
-                <div className="md:hidden bg-white border-t border-orange-100">
+                <div className="md:hidden bg-white border-t border-gray-200">
                     <div className="px-4 py-3 space-y-3">
                         <NavLink
                             to="/"
                             end
                             className={({ isActive }) =>
                                 isActive
-                                    ? "block text-orange-600 font-semibold py-2"
-                                    : "block text-gray-700 hover:text-orange-600 py-2"
+                                    ? "block text-slate-800 font-semibold py-2"
+                                    : "block text-gray-600 hover:text-slate-800 py-2"
                             }
                             onClick={() => setIsOpen(false)}
                         >
@@ -138,8 +157,8 @@ const NavBar = () => {
                             to="/my-products"
                             className={({ isActive }) =>
                                 isActive
-                                    ? "block text-orange-600 font-semibold py-2"
-                                    : "block text-gray-700 hover:text-orange-600 py-2"
+                                    ? "block text-slate-800 font-semibold py-2"
+                                    : "block text-gray-600 hover:text-slate-800 py-2"
                             }
                             onClick={() => setIsOpen(false)}
                         >
@@ -149,8 +168,8 @@ const NavBar = () => {
                             to="/create-product"
                             className={({ isActive }) =>
                                 isActive
-                                    ? "block text-orange-600 font-semibold py-2"
-                                    : "block text-gray-700 hover:text-orange-600 py-2"
+                                    ? "block text-slate-800 font-semibold py-2"
+                                    : "block text-gray-600 hover:text-slate-800 py-2"
                             }
                             onClick={() => setIsOpen(false)}
                         >
@@ -160,19 +179,33 @@ const NavBar = () => {
                             to="/myorders"
                             className={({ isActive }) =>
                                 isActive
-                                    ? "block text-orange-600 font-semibold py-2"
-                                    : "block text-gray-700 hover:text-orange-600 py-2"
+                                    ? "block text-slate-800 font-semibold py-2"
+                                    : "block text-gray-600 hover:text-slate-800 py-2"
                             }
                             onClick={() => setIsOpen(false)}
                         >
                             Orders
                         </NavLink>
+                        {isAdmin && (
+                            <NavLink
+                                to="/admin/dashboard"
+                                className={({ isActive }) =>
+                                    isActive
+                                        ? "flex items-center gap-2 text-emerald-800 font-bold py-2 bg-emerald-50 px-2 rounded"
+                                        : "flex items-center gap-2 text-emerald-700 hover:text-emerald-800 py-2"
+                                }
+                                onClick={() => setIsOpen(false)}
+                            >
+                                <Shield size={18} />
+                                Admin Dashboard
+                            </NavLink>
+                        )}
                         <NavLink
                             to="/profile"
                             className={({ isActive }) =>
                                 isActive
-                                    ? "block text-orange-600 font-semibold py-2"
-                                    : "block text-gray-700 hover:text-orange-600 py-2"
+                                    ? "block text-slate-800 font-semibold py-2"
+                                    : "block text-gray-600 hover:text-slate-800 py-2"
                             }
                             onClick={() => setIsOpen(false)}
                         >
@@ -191,7 +224,7 @@ const NavBar = () => {
                         ) : (
                             <NavLink
                                 to="/login"
-                                className="block text-orange-600 font-semibold py-2"
+                                className="block text-slate-800 font-semibold py-2"
                                 onClick={() => setIsOpen(false)}
                             >
                                 Login

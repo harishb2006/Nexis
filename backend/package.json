@@ -8,7 +8,8 @@
     "start": "node server.js",
     "ingest": "node ai/services/documentIngestion.js",
     "ingest:old": "node rag/ingest.js ./rag/data/Shipping.txt",
-    "test-retrieval": "node rag/retriever.js \"How does shipping work?\""
+    "test-retrieval": "node rag/retriever.js \"How does shipping work?\"",
+    "test-langgraph": "node testLangGraphAgent.js"
   },
   "keywords": [],
   "author": "",
@@ -18,7 +19,8 @@
     "@cerebras/cerebras_cloud_sdk": "^1.64.1",
     "@langchain/cohere": "^1.0.1",
     "@langchain/community": "^1.1.2",
-    "@langchain/core": "^1.1.11",
+    "@langchain/core": "^1.1.18",
+    "@langchain/langgraph": "^1.1.2",
     "@langchain/mongodb": "^1.1.0",
     "@langchain/textsplitters": "^1.0.1",
     "bcryptjs": "^2.4.3",
@@ -32,7 +34,7 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.7",
     "uuid": "^13.0.0",
-    "zod": "^4.3.5"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

@@ -1,21 +1,22 @@
-# 🤖 SupportFlow AI - Nexis E-commerce Platform
+# 🤖 Nexis E-commerce - Full Autonomous AI Agent
 
-> **Level 3 Autonomous AI Agent** built on MERN stack with production-grade features
+> **LangGraph-Powered Autonomous Agent** - State machine architecture with conditional routing
 
-A modern, full-stack e-commerce application featuring a **production-ready AI agent** with streaming responses, multi-step reasoning, conversation memory, and 8 specialized tools.
+A modern, full-stack e-commerce application featuring a **production-ready autonomous AI agent** built with LangGraph, featuring state-based workflows, streaming responses, multi-step reasoning, conversation memory, and 8 specialized tools.
 
 ---
 
 ## 🎯 What Makes This Special
 
-This isn't a chatbot—it's an **autonomous AI agent** that can:
+This isn't a chatbot—it's a **true autonomous agent with LangGraph** that:
 
-✅ **Think** - Classifies intent and decides which actions to take  
-✅ **Act** - Executes 8 specialized tools for database operations  
-✅ **Remember** - Maintains conversation context with MongoDB threads  
-✅ **Reason** - Performs multi-step operations (DB + RAG + logic)  
-✅ **Escalate** - Detects frustration and creates briefing notes  
-✅ **Stream** - Real-time Server-Sent Events with transparent status  
+✅ **State Machine Architecture** - Graph-based workflow with cycles and branching  
+✅ **Autonomous Decision Making** - Decides which tools to use and when  
+✅ **Multi-Step Reasoning** - Executes complex workflows (DB + RAG + logic)  
+✅ **Conditional Routing** - Different paths based on context  
+✅ **Self-Monitoring** - Tracks sentiment and escalates when needed  
+✅ **Real-Time Streaming** - Server-Sent Events with transparent status  
+✅ **No Hardcoding** - Fully configurable via environment variables  
 
 **This is senior-level AI engineering work in 2026.**
 
@@ -26,7 +27,9 @@ This isn't a chatbot—it's an **autonomous AI agent** that can:
 ```bash
 # Backend
 cd backend
-./quickstart.sh          # Automated setup
+npm install
+npm run test-langgraph    # Test the LangGraph agent
+npm run dev              # Start server
 
 # Frontend (new terminal)
 cd frontend
@@ -35,7 +38,7 @@ npm run dev
 # Open: http://localhost:5173
 ```
 
-**Full setup guide**: See [START_HERE.md](START_HERE.md)
+**Full setup guide**: See [LANGGRAPH_QUICKSTART.md](LANGGRAPH_QUICKSTART.md)
 
 ---
 
@@ -43,11 +46,12 @@ npm run dev
 
 | Document | Purpose | Lines |
 |----------|---------|-------|
-| **[START_HERE.md](START_HERE.md)** | Quick start & next steps | 340 |
-| **[SUPPORTFLOW_AI_GUIDE.md](SUPPORTFLOW_AI_GUIDE.md)** | Technical architecture | 445 |
-| **[PROJECT_COMPLETE.md](PROJECT_COMPLETE.md)** | Feature reference | 341 |
-| **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** | What was built | 290 |
-| **[VISUAL_FLOW_GUIDE.md](VISUAL_FLOW_GUIDE.md)** | System diagrams | 500+ |
+| **[LANGGRAPH_QUICKSTART.md](LANGGRAPH_QUICKSTART.md)** | Quick start guide | NEW |
+| **[LANGGRAPH_IMPLEMENTATION.md](LANGGRAPH_IMPLEMENTATION.md)** | Architecture & design | NEW |
+| **[LANGGRAPH_VISUAL_FLOW.md](LANGGRAPH_VISUAL_FLOW.md)** | Visual diagrams | NEW |
+| **[LANGGRAPH_EXTENSIONS.md](LANGGRAPH_EXTENSIONS.md)** | Advanced features | NEW |
+| **[AGENTIC_WORKFLOW_GUIDE.md](AGENTIC_WORKFLOW_GUIDE.md)** | Original guide | 1585 |
+| **[START_HERE.md](START_HERE.md)** | General setup | 340 |
 
 **Total documentation: 1,900+ lines**
 

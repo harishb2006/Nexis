@@ -20,23 +20,23 @@ function Product({ _id, name, images, description, price }) {
     
     return (
       <div 
-        className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 cursor-pointer group"
+        className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer group border border-gray-100"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => navigate(`/product/${_id}`)}
       >
         {/* Image Section */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-orange-50 to-amber-50 h-64">
+        <div className="relative overflow-hidden bg-gray-50 h-64">
           <img
             src={`${backendURL}${currentImage}`}
             alt={name}
-            className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
           />
           
           {/* Quick Actions */}
           <div className={`absolute top-3 right-3 flex flex-col gap-2 transition-all duration-300 ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
             <button 
-              className="bg-white p-2 rounded-full shadow-lg hover:bg-orange-500 hover:text-white transition-colors"
+              className="bg-white p-2 rounded-full shadow-md hover:bg-slate-800 hover:text-white transition-colors border border-gray-100"
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -44,7 +44,7 @@ function Product({ _id, name, images, description, price }) {
               <Heart size={18} />
             </button>
             <button 
-              className="bg-white p-2 rounded-full shadow-lg hover:bg-orange-500 hover:text-white transition-colors"
+              className="bg-white p-2 rounded-full shadow-md hover:bg-slate-800 hover:text-white transition-colors border border-gray-100"
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -56,15 +56,15 @@ function Product({ _id, name, images, description, price }) {
 
         {/* Content Section */}
         <div className="p-5">
-          <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-1">{name}</h3>
-          <p className="text-sm text-gray-600 mb-4 line-clamp-2">{description}</p>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-1">{name}</h3>
+          <p className="text-sm text-gray-500 mb-4 line-clamp-2">{description}</p>
           
           <div className="flex items-center justify-between">
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-orange-600">${price.toFixed(2)}</span>
+              <span className="text-2xl font-bold text-gray-800">${price.toFixed(2)}</span>
             </div>
             <button
-              className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-5 py-2 rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-200 font-medium text-sm"
+              className="bg-slate-800 text-white px-5 py-2 rounded-lg hover:bg-slate-700 transition-all duration-200 font-medium text-sm"
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/product/${_id}`);

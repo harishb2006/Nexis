@@ -10,7 +10,7 @@ const knowledgeBaseSchema = new mongoose.Schema(
     embedding: {
       type: [Number],
       required: true,
-      description: 'Cohere embedding vector (1024 dimensions)'
+      description: 'Cohere embedding vector (1024 dimensions for embed-english-v3.0)'
     },
     source: {
       type: String,
@@ -33,8 +33,62 @@ const knowledgeBaseSchema = new mongoose.Schema(
   }
 );
 
-// Create index for vector search (MongoDB Atlas Search)
-knowledgeBaseSchema.index({ embedding: 1 });
+// Standard indexes for regular queries
 knowledgeBaseSchema.index({ source: 1 });
+knowledgeBaseSchema.index({ createdAt: -1 });
+
+/**
+ * MONGODB ATLAS VECTOR SEARCH INDEX CONFIGURATION
+ * 
+ * To enable vector search, create the following index in MongoDB Atlas:
+ * 
+ * 1. Go to your MongoDB Atlas cluster
+ * 2. Navigate to "Atlas Search" tab
+ * 3. Click "Create Search Index"
+ * 4. Choose "JSON Editor" and use this configuration:
+ * 
+ * {
+ *   "name": "vector_index",
+ *   "type": "vectorSearch",
+ *   "definition": {
+ *     "fields": [
+ *       {
+ *         "type": "vector",
+ *         "path": "embedding",
+ *         "numDimensions": 1024,
+ *         "similarity": "cosine"
+ *       }
+ *     ]
+ *   }
+ * }
+ * 
+ * 5. Select the "knowledge_base" collection
+ * 6. Click "Create Index"
+ * 
+ * The index name MUST be "vector_index" to match the retriever.js configuration.
+ */
 
 export default mongoose.model('KnowledgeBase', knowledgeBaseSchema);
+
+/**
+ * Helper function to check if vector search index exists
+ * Can be used for health checks
+ */
+export async function checkVectorSearchIndex() {
+  try {
+    const db = mongoose.connection.db;
+    const indexes = await db.collection('knowledge_base').listSearchIndexes().toArray();
+    const vectorIndex = indexes.find(idx => idx.name === 'vector_index');
+    
+    if (vectorIndex) {
+      console.log('✅ MongoDB Atlas Vector Search index "vector_index" found');
+      return true;
+    } else {
+      console.warn('⚠️  Vector Search index "vector_index" not found. Please create it in MongoDB Atlas.');
+      return false;
+    }
+  } catch (error) {
+    console.warn('⚠️  Could not check vector search index:', error.message);
+    return false;
+  }
+}

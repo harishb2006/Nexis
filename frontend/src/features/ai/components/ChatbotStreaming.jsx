@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Loader2, Sparkles, Database, Search, Package, CheckCircle2, Zap } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import axios from '../../../axiosConfig';
+import ReactMarkdown from 'react-markdown';
 
 export default function ChatbotStreaming() {
   const [isOpen, setIsOpen] = useState(false);
+  const userEmail = useSelector((state) => state.user.email); // Get email from Redux
   const [messages, setMessages] = useState([
     {
       type: 'bot',
@@ -19,7 +22,7 @@ export default function ChatbotStreaming() {
   const [threadId, setThreadId] = useState(null); // Conversation memory
   const [suggestions] = useState([
     "How does shipping work?",
-    "Show me all pending orders",
+    "Show my orders",
     "Search for electronics",
     "What's your return policy?",
   ]);
@@ -58,6 +61,7 @@ export default function ChatbotStreaming() {
         body: JSON.stringify({
           question: text.trim(),
           threadId: threadId, // Pass existing threadId for conversation memory
+          email: userEmail || null, // Pass user email if logged in
         }),
       });
 
@@ -221,10 +225,10 @@ export default function ChatbotStreaming() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-full shadow-2xl hover:from-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-110 z-50 group"
+          className="fixed bottom-6 right-6 bg-gradient-to-r from-slate-800 to-slate-700 text-white p-5 rounded-full shadow-2xl hover:from-slate-700 hover:to-slate-600 transition-all duration-300 transform hover:scale-110 z-50 group"
         >
-          <MessageCircle size={28} className="group-hover:animate-bounce" />
-          <span className="absolute -top-1 -right-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center animate-pulse font-bold">
+          <MessageCircle size={32} className="group-hover:animate-bounce" />
+          <span className="absolute -top-2 -right-2 bg-gradient-to-r from-emerald-500 to-emerald-400 text-white text-sm rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-lg animate-pulse">
             AI
           </span>
         </button>
@@ -232,42 +236,42 @@ export default function ChatbotStreaming() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-[420px] h-[650px] bg-white rounded-2xl shadow-2xl flex flex-col z-50 border border-orange-200">
+        <div className="fixed bottom-6 right-6 w-[500px] h-[750px] bg-white rounded-2xl shadow-2xl flex flex-col z-50 border-2 border-gray-200">
           {/* Header */}
-          <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 text-white p-5 rounded-t-2xl flex justify-between items-center">
-            <div className="flex items-center space-x-3">
+          <div className="bg-gradient-to-r from-slate-800 to-slate-700 text-white p-6 rounded-t-2xl flex justify-between items-center shadow-lg">
+            <div className="flex items-center space-x-4">
               <div className="relative">
-                <Sparkles size={24} className="animate-pulse" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full"></div>
+                <Sparkles size={28} className="text-emerald-400" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-ping"></div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full"></div>
               </div>
               <div>
-                <h3 className="font-bold text-lg">SupportFlow AI</h3>
-                <p className="text-xs text-orange-100">Level 3 Agentic System</p>
+                <h3 className="font-bold text-xl">SupportFlow AI</h3>
+                <p className="text-sm text-slate-300">Smart Shopping Assistant</p>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="hover:bg-white/20 p-2 rounded-lg transition-colors"
+              className="hover:bg-white/20 p-2 rounded-lg transition-all transform hover:scale-110"
             >
-              <X size={22} />
+              <X size={24} />
             </button>
           </div>
 
           {/* Agent Status Bar */}
           {(agentStatus || toolsInProgress.length > 0) && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 border-b border-blue-100">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-5 py-4 border-b border-blue-100">
               {agentStatus && (
-                <div className="flex items-center space-x-2 text-sm text-blue-700 mb-2">
+                <div className="flex items-center space-x-3 text-base text-slate-700 mb-2">
                   {getStatusIcon(agentStatus.status)}
-                  <span className="font-medium">{agentStatus.message}</span>
+                  <span className="font-semibold">{agentStatus.message}</span>
                 </div>
               )}
               {toolsInProgress.map((tool, idx) => (
                 <div
                   key={idx}
-                  className={`flex items-center space-x-2 text-xs ${
-                    tool.status === 'completed' ? 'text-green-600' : 'text-purple-600'
+                  className={`flex items-center space-x-3 text-sm ${
+                    tool.status === 'completed' ? 'text-emerald-600 font-semibold' : 'text-slate-600'
                   } mb-1`}
                 >
                   {getStatusIcon(tool.status)}
@@ -278,47 +282,69 @@ export default function ChatbotStreaming() {
           )}
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
+          <div className="flex-1 overflow-y-auto p-6 space-y-5 bg-gradient-to-b from-gray-50 to-gray-100">
             {messages.map((message, index) => (
               <div
                 key={index}
                 className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[85%] p-4 rounded-2xl shadow-lg ${
+                  className={`max-w-[90%] p-5 rounded-2xl shadow-md ${
                     message.type === 'user'
-                      ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-tr-none'
+                      ? 'bg-gradient-to-br from-slate-800 to-slate-700 text-white rounded-tr-none'
                       : message.error
-                      ? 'bg-gradient-to-br from-red-100 to-red-200 text-red-800 rounded-tl-none'
-                      : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
+                      ? 'bg-red-50 text-red-800 rounded-tl-none border-2 border-red-200'
+                      : 'bg-white text-gray-800 rounded-tl-none border border-gray-200'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
+                  {message.type === 'user' ? (
+                    <p className="text-base leading-relaxed whitespace-pre-wrap">{message.text}</p>
+                  ) : (
+                    <div className="text-base leading-relaxed prose prose-base max-w-none">
+                      <ReactMarkdown
+                        components={{
+                          a: ({ node, ...props }) => (
+                            <a
+                              {...props}
+                              className="text-blue-600 hover:text-blue-700 underline decoration-2 underline-offset-2 font-semibold transition-colors"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            />
+                          ),
+                          p: ({ node, ...props }) => <p {...props} className="mb-3" />,
+                          strong: ({ node, ...props }) => <strong {...props} className="font-bold text-slate-900" />,
+                          ul: ({ node, ...props }) => <ul {...props} className="ml-4 space-y-1" />,
+                        }}
+                      >
+                        {message.text}
+                      </ReactMarkdown>
+                    </div>
+                  )}
                   
                   {message.toolsUsed && message.toolsUsed.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <p className="text-xs text-gray-500 font-semibold mb-1">🛠️ Tools Used:</p>
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <p className="text-sm text-gray-600 font-bold mb-2">Tools Used:</p>
                       {message.toolsUsed.map((tool, idx) => (
-                        <div key={idx} className="text-xs text-gray-600 bg-blue-50 p-2 rounded mt-1">
-                          <span className="font-medium">{tool.tool}</span>
-                          {tool.result.success && <span className="text-green-600 ml-2">✓</span>}
+                        <div key={idx} className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg mt-2 flex items-center justify-between">
+                          <span className="font-semibold">{tool.tool}</span>
+                          {tool.result.success && <span className="text-emerald-600 text-lg">✓</span>}
                         </div>
                       ))}
                     </div>
                   )}
                   
                   {message.sources && message.sources.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <p className="text-xs text-gray-500 font-semibold mb-1">📚 Sources:</p>
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <p className="text-sm text-gray-600 font-bold mb-2">Sources:</p>
                       {message.sources.map((source, idx) => (
-                        <p key={idx} className="text-xs text-gray-500 mt-1">
+                        <p key={idx} className="text-sm text-gray-600 mt-1">
                           • {source.relevance} relevant
                         </p>
                       ))}
                     </div>
                   )}
                   
-                  <p className="text-xs text-gray-400 mt-2">
+                  <p className="text-xs text-gray-400 mt-3">
                     {message.timestamp.toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
@@ -331,19 +357,35 @@ export default function ChatbotStreaming() {
             {/* Streaming Answer Preview */}
             {currentAnswer && (
               <div className="flex justify-start">
-                <div className="max-w-[85%] p-4 rounded-2xl rounded-tl-none shadow-lg bg-white text-gray-800 border border-gray-100">
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                    {currentAnswer}
-                    <span className="inline-block w-2 h-4 bg-orange-500 animate-pulse ml-1"></span>
-                  </p>
+                <div className="max-w-[90%] p-5 rounded-2xl rounded-tl-none shadow-md bg-white text-gray-800 border border-gray-200">
+                  <div className="text-base leading-relaxed prose prose-base max-w-none">
+                    <ReactMarkdown
+                      components={{
+                        a: ({ node, ...props }) => (
+                          <a
+                            {...props}
+                            className="text-blue-600 hover:text-blue-700 underline decoration-2 underline-offset-2 font-semibold transition-colors"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          />
+                        ),
+                        p: ({ node, ...props }) => <p {...props} className="mb-3" />,
+                        strong: ({ node, ...props }) => <strong {...props} className="font-bold text-slate-900" />,
+                        ul: ({ node, ...props }) => <ul {...props} className="ml-4 space-y-1" />,
+                      }}
+                    >
+                      {currentAnswer}
+                    </ReactMarkdown>
+                    <span className="inline-block w-2 h-4 bg-slate-600 animate-pulse ml-1"></span>
+                  </div>
                 </div>
               </div>
             )}
 
             {isLoading && !currentAnswer && !agentStatus && (
               <div className="flex justify-start">
-                <div className="bg-white p-4 rounded-2xl rounded-tl-none shadow-lg border border-gray-100">
-                  <Loader2 size={20} className="animate-spin text-orange-500" />
+                <div className="bg-white p-5 rounded-2xl rounded-tl-none shadow-md border border-gray-200">
+                  <Loader2 size={24} className="animate-spin text-slate-600" />
                 </div>
               </div>
             )}
@@ -353,14 +395,14 @@ export default function ChatbotStreaming() {
 
           {/* Suggestions */}
           {messages.length === 1 && (
-            <div className="px-4 py-3 border-t border-orange-100 bg-gradient-to-r from-orange-50 to-amber-50">
-              <p className="text-xs text-gray-600 font-semibold mb-2">✨ Try asking:</p>
+            <div className="px-5 py-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50">
+              <p className="text-sm text-gray-700 font-bold mb-3">💡 Quick Actions:</p>
               <div className="flex flex-wrap gap-2">
                 {suggestions.map((suggestion, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="text-xs bg-white border border-orange-200 text-orange-700 px-3 py-2 rounded-full hover:bg-orange-100 hover:border-orange-300 transition-all shadow-sm font-medium"
+                    className="text-sm bg-white border-2 border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all font-semibold shadow-sm hover:shadow-md transform hover:scale-105"
                   >
                     {suggestion}
                   </button>
@@ -370,23 +412,23 @@ export default function ChatbotStreaming() {
           )}
 
           {/* Input */}
-          <div className="p-4 border-t border-orange-100 bg-white rounded-b-2xl">
-            <div className="flex space-x-2">
+          <div className="p-5 border-t-2 border-gray-200 bg-white rounded-b-2xl">
+            <div className="flex space-x-3">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask about orders, products, or policies..."
-                className="flex-1 px-4 py-3 border border-orange-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                className="flex-1 px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-base shadow-sm"
                 disabled={isLoading}
               />
               <button
                 onClick={() => handleSendMessage()}
                 disabled={!input.trim() || isLoading}
-                className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-3 rounded-full hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                className="bg-gradient-to-r from-slate-800 to-slate-700 text-white px-6 py-4 rounded-xl hover:from-slate-700 hover:to-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg transform hover:scale-105 active:scale-95"
               >
-                <Send size={20} />
+                <Send size={22} />
               </button>
             </div>
           </div>

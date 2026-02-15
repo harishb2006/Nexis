@@ -25,10 +25,10 @@ if (loading) {
   return (
     <>
       <NavBar />
-      <div className="min-h-screen bg-gradient-to-br from-orange-100 via-amber-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-700 text-lg">Loading products...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800 mx-auto"></div>
+          <p className="mt-4 text-gray-600 text-lg">Loading products...</p>
         </div>
       </div>
     </>
@@ -39,7 +39,7 @@ if (error) {
   return (
     <>
       <NavBar />
-      <div className="min-h-screen bg-gradient-to-br from-orange-100 via-amber-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center text-red-500">Error: {error}</div>
       </div>
     </>
@@ -49,11 +49,11 @@ if (error) {
   return (
     <>
       <NavBar />
-      <div className="min-h-screen bg-gradient-to-br from-orange-100 via-amber-50 to-orange-50">
+      <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold text-gray-800 mb-4">Discover Our Collection</h1>
-            <p className="text-gray-600 text-lg">Explore the finest products curated just for you</p>
+            <h1 className="text-4xl font-bold text-gray-800 mb-4">Discover Our Collection</h1>
+            <p className="text-gray-500 text-lg">Explore the finest products curated just for you</p>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

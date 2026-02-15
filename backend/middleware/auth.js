@@ -4,7 +4,7 @@ import ErrorHandler from '../utils/ErrorHandler.js';
 import catchAsyncErrors from './catchAsyncErrors.js';
 //  const JWT=process.env.JWT_SECRET;
 
- const isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
+ const isAuthenticated = catchAsyncErrors(async (req, res, next) => {
      const token = req.cookies.token;
      console.log("Token from cookies:", token);
      console.log(req.cookies);
@@ -32,5 +32,21 @@ import catchAsyncErrors from './catchAsyncErrors.js';
  
      next();
  });
+
+ // Admin role check middleware
+ const isAdmin = catchAsyncErrors(async (req, res, next) => {
+     if (!req.user) {
+         return next(new ErrorHandler("Please login first", 401));
+     }
+
+     if (req.user.role !== "admin") {
+         return next(new ErrorHandler("Access denied. Admin privileges required.", 403));
+     }
+
+     next();
+ });
  
- export { isAuthenticatedUser };
+ export { isAuthenticated, isAdmin };
+ 
+ // Alias for backward compatibility
+ export const isAuthenticatedUser = isAuthenticated;

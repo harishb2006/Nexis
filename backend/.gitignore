@@ -12,9 +12,12 @@ logs
 *.log
 npm-debug.log*
 
-# User uploads (uncomment if you don't want to track uploaded files)
-# uploads/
-# products/
+# User uploads - ignore images/PDFs but keep knowledge base txt files  
+uploads/*.pdf
+uploads/*.png
+uploads/*.jpg
+uploads/*.jpeg
+products/
 
 # OS files
 .DS_Store

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, Sparkles } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Sparkles, ThumbsUp, ThumbsDown } from 'lucide-react';
 import axios from '../../../axiosConfig';
 
 export default function Chatbot() {
@@ -13,6 +13,7 @@ export default function Chatbot() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [messageFeedback, setMessageFeedback] = useState({}); // Track feedback for each message
   const [suggestions] = useState([
     "How does shipping work?",
     "What are your shipping costs?",
@@ -73,6 +74,27 @@ export default function Chatbot() {
     handleSendMessage(suggestion);
   };
 
+  const handleFeedback = async (messageIndex, feedbackType) => {
+    setMessageFeedback((prev) => ({
+      ...prev,
+      [messageIndex]: feedbackType,
+    }));
+    
+    // Send feedback to backend
+    try {
+      const message = messages[messageIndex];
+      await axios.post('/api/v2/chat/feedback', {
+        messageIndex,
+        feedbackType,
+        question: messageIndex > 0 ? messages[messageIndex - 1]?.text : null,
+        answer: message?.text,
+      });
+      console.log(`Feedback sent: ${feedbackType}`);
+    } catch (error) {
+      console.error('Failed to send feedback:', error);
+    }
+  };
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -86,10 +108,10 @@ export default function Chatbot() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-full shadow-2xl hover:from-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:scale-110 z-50 group"
+          className="fixed bottom-6 right-6 bg-slate-800 text-white p-4 rounded-full shadow-lg hover:bg-slate-700 transition-all duration-300 transform hover:scale-105 z-50 group"
         >
           <MessageCircle size={28} className="group-hover:animate-bounce" />
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center animate-pulse">
+          <span className="absolute -top-1 -right-1 bg-slate-600 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
             AI
           </span>
         </button>
@@ -97,14 +119,14 @@ export default function Chatbot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col z-50 border border-orange-200">
+        <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-white rounded-xl shadow-xl flex flex-col z-50 border border-gray-200">
           {/* Header */}
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-t-2xl flex justify-between items-center">
+          <div className="bg-slate-800 text-white p-4 rounded-t-xl flex justify-between items-center">
             <div className="flex items-center space-x-2">
               <Sparkles size={20} />
               <div>
                 <h3 className="font-semibold">ShopHub Assistant</h3>
-                <p className="text-xs text-orange-100">AI-Powered Support</p>
+                <p className="text-xs text-slate-300">AI-Powered Support</p>
               </div>
             </div>
             <button
@@ -116,32 +138,50 @@ export default function Chatbot() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-br from-orange-50 to-amber-50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
             {messages.map((message, index) => (
               <div
                 key={index}
                 className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] p-3 rounded-2xl ${
+                  className={`max-w-[80%] p-3 rounded-xl ${
                     message.type === 'user'
-                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-tr-none'
+                      ? 'bg-slate-800 text-white rounded-tr-none'
                       : message.error
                       ? 'bg-red-100 text-red-800 rounded-tl-none'
-                      : 'bg-white text-gray-800 rounded-tl-none shadow-md'
+                      : 'bg-white text-gray-800 rounded-tl-none shadow-sm border border-gray-100'
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{message.text}</p>
-                  {message.sources && message.sources.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
-                      <p className="text-xs text-gray-500">Sources:</p>
-                      {message.sources.map((source, idx) => (
-                        <p key={idx} className="text-xs text-gray-400 mt-1">
-                          • {source.relevance} relevant
-                        </p>
-                      ))}
+                  
+                  {/* Feedback buttons for bot messages */}
+                  {message.type === 'bot' && !message.error && (
+                    <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200">
+                      <span className="text-xs text-gray-500">Helpful?</span>
+                      <button
+                        onClick={() => handleFeedback(index, 'up')}
+                        className={`p-1 rounded transition-all transform hover:scale-110 ${
+                          messageFeedback[index] === 'up'
+                            ? 'bg-emerald-100 text-emerald-600'
+                            : 'hover:bg-gray-100 text-gray-400 hover:text-emerald-600'
+                        }`}
+                      >
+                        <ThumbsUp size={14} className={messageFeedback[index] === 'up' ? 'fill-current' : ''} />
+                      </button>
+                      <button
+                        onClick={() => handleFeedback(index, 'down')}
+                        className={`p-1 rounded transition-all transform hover:scale-110 ${
+                          messageFeedback[index] === 'down'
+                            ? 'bg-red-100 text-red-600'
+                            : 'hover:bg-gray-100 text-gray-400 hover:text-red-600'
+                        }`}
+                      >
+                        <ThumbsDown size={14} className={messageFeedback[index] === 'down' ? 'fill-current' : ''} />
+                      </button>
                     </div>
                   )}
+                  
                   <p className="text-xs text-gray-400 mt-1">
                     {message.timestamp.toLocaleTimeString([], {
                       hour: '2-digit',
@@ -154,8 +194,8 @@ export default function Chatbot() {
             
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-white p-3 rounded-2xl rounded-tl-none shadow-md">
-                  <Loader2 size={20} className="animate-spin text-orange-500" />
+                <div className="bg-white p-3 rounded-xl rounded-tl-none shadow-sm border border-gray-100">
+                  <Loader2 size={20} className="animate-spin text-slate-600" />
                 </div>
               </div>
             )}
@@ -165,14 +205,14 @@ export default function Chatbot() {
 
           {/* Suggestions */}
           {messages.length === 1 && (
-            <div className="px-4 py-2 border-t border-orange-100 bg-white">
+            <div className="px-4 py-2 border-t border-gray-100 bg-white">
               <p className="text-xs text-gray-500 mb-2">Quick questions:</p>
               <div className="flex flex-wrap gap-2">
                 {suggestions.map((suggestion, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="text-xs bg-orange-100 text-orange-700 px-3 py-1 rounded-full hover:bg-orange-200 transition-colors"
+                    className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded-full hover:bg-gray-200 transition-colors"
                   >
                     {suggestion}
                   </button>
@@ -182,7 +222,7 @@ export default function Chatbot() {
           )}
 
           {/* Input */}
-          <div className="p-4 border-t border-orange-100 bg-white rounded-b-2xl">
+          <div className="p-4 border-t border-gray-100 bg-white rounded-b-xl">
             <div className="flex space-x-2">
               <input
                 type="text"
@@ -190,13 +230,13 @@ export default function Chatbot() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask a question..."
-                className="flex-1 px-4 py-2 border border-orange-200 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm"
                 disabled={isLoading}
               />
               <button
                 onClick={() => handleSendMessage()}
                 disabled={!input.trim() || isLoading}
-                className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-2 rounded-full hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="bg-slate-800 text-white p-2 rounded-lg hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 <Send size={20} />
               </button>

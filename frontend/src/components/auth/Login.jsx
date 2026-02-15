@@ -4,7 +4,7 @@ import styles from "../../styles/styles";
 import axios from "../../axiosConfig";
 // import axios from 'axios'
 import { useDispatch, useSelector } from "react-redux"; 
-import { setemail } from "../../store/userActions";
+import { setUser } from "../../store/userActions";
 import { useNavigate } from "react-router-dom"; 
 
 // Ensure axios sends cookies with requests
@@ -28,13 +28,23 @@ const Login = () => {
         { withCredentials: true }
       );
       console.log(response.data);
-      alert("Logged in successfully!");
-      // Dispatch email to Redux state (token is now handled via cookies)
-      dispatch(setemail(email));
-      // Redirect to home or profile page after successful login
-      navigate("/");
+      
+      // Store full user info including role
+      dispatch(setUser({
+        email: response.data.user.email,
+        role: response.data.user.role,
+        name: response.data.user.name,
+      }));
+      
+      // Show role-based success message
+      const isAdmin = response.data.user.role === 'admin';
+      alert(isAdmin ? "Admin logged in successfully!" : "Logged in successfully!");
+      
+      // Redirect to admin dashboard if admin, otherwise home
+      navigate(isAdmin ? "/admin/dashboard" : "/");
     } catch (error) {
       console.error("There was an error logging in!", error);
+      alert(error.response?.data?.message || "Login failed. Please check your credentials.");
     }
   };
 

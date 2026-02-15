@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, Sparkles } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Sparkles, ThumbsUp, ThumbsDown } from 'lucide-react';
 import axios from '../../../axiosConfig';
 
 export default function Chatbot() {
@@ -13,6 +13,7 @@ export default function Chatbot() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [messageFeedback, setMessageFeedback] = useState({}); // Track feedback for each message
   const [suggestions] = useState([
     "How does shipping work?",
     "What are your shipping costs?",
@@ -71,6 +72,27 @@ export default function Chatbot() {
 
   const handleSuggestionClick = (suggestion) => {
     handleSendMessage(suggestion);
+  };
+
+  const handleFeedback = async (messageIndex, feedbackType) => {
+    setMessageFeedback((prev) => ({
+      ...prev,
+      [messageIndex]: feedbackType,
+    }));
+    
+    // Send feedback to backend
+    try {
+      const message = messages[messageIndex];
+      await axios.post('/api/v2/chat/feedback', {
+        messageIndex,
+        feedbackType,
+        question: messageIndex > 0 ? messages[messageIndex - 1]?.text : null,
+        answer: message?.text,
+      });
+      console.log(`Feedback sent: ${feedbackType}`);
+    } catch (error) {
+      console.error('Failed to send feedback:', error);
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -132,16 +154,34 @@ export default function Chatbot() {
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{message.text}</p>
-                  {message.sources && message.sources.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
-                      <p className="text-xs text-gray-500">Sources:</p>
-                      {message.sources.map((source, idx) => (
-                        <p key={idx} className="text-xs text-gray-400 mt-1">
-                          • {source.relevance} relevant
-                        </p>
-                      ))}
+                  
+                  {/* Feedback buttons for bot messages */}
+                  {message.type === 'bot' && !message.error && (
+                    <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200">
+                      <span className="text-xs text-gray-500">Helpful?</span>
+                      <button
+                        onClick={() => handleFeedback(index, 'up')}
+                        className={`p-1 rounded transition-all transform hover:scale-110 ${
+                          messageFeedback[index] === 'up'
+                            ? 'bg-emerald-100 text-emerald-600'
+                            : 'hover:bg-gray-100 text-gray-400 hover:text-emerald-600'
+                        }`}
+                      >
+                        <ThumbsUp size={14} className={messageFeedback[index] === 'up' ? 'fill-current' : ''} />
+                      </button>
+                      <button
+                        onClick={() => handleFeedback(index, 'down')}
+                        className={`p-1 rounded transition-all transform hover:scale-110 ${
+                          messageFeedback[index] === 'down'
+                            ? 'bg-red-100 text-red-600'
+                            : 'hover:bg-gray-100 text-gray-400 hover:text-red-600'
+                        }`}
+                      >
+                        <ThumbsDown size={14} className={messageFeedback[index] === 'down' ? 'fill-current' : ''} />
+                      </button>
                     </div>
                   )}
+                  
                   <p className="text-xs text-gray-400 mt-1">
                     {message.timestamp.toLocaleTimeString([], {
                       hour: '2-digit',

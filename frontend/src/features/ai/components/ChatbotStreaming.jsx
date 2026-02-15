@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, Sparkles, Database, Search, Package, CheckCircle2, Zap } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Sparkles, Database, Search, Package, CheckCircle2, Zap, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import axios from '../../../axiosConfig';
 import ReactMarkdown from 'react-markdown';
@@ -20,6 +20,7 @@ export default function ChatbotStreaming() {
   const [toolsInProgress, setToolsInProgress] = useState([]);
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [threadId, setThreadId] = useState(null); // Conversation memory
+  const [messageFeedback, setMessageFeedback] = useState({}); // Track feedback for each message
   const [suggestions] = useState([
     "How does shipping work?",
     "Show my orders",
@@ -200,6 +201,29 @@ export default function ChatbotStreaming() {
     }
   };
 
+  const handleFeedback = async (messageIndex, feedbackType) => {
+    setMessageFeedback((prev) => ({
+      ...prev,
+      [messageIndex]: feedbackType,
+    }));
+    
+    // Send feedback to backend
+    try {
+      const message = messages[messageIndex];
+      await axios.post('/api/v2/chat/feedback', {
+        messageIndex,
+        feedbackType,
+        threadId: threadId || null,
+        question: messageIndex > 0 ? messages[messageIndex - 1]?.text : null,
+        answer: message?.text,
+        userEmail: userEmail || null,
+      });
+      console.log(`Feedback sent: ${feedbackType}`);
+    } catch (error) {
+      console.error('Failed to send feedback:', error);
+    }
+  };
+
   const getStatusIcon = (status) => {
     switch (status) {
       case 'searching':
@@ -333,14 +357,32 @@ export default function ChatbotStreaming() {
                     </div>
                   )}
                   
-                  {message.sources && message.sources.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <p className="text-sm text-gray-600 font-bold mb-2">Sources:</p>
-                      {message.sources.map((source, idx) => (
-                        <p key={idx} className="text-sm text-gray-600 mt-1">
-                          • {source.relevance} relevant
-                        </p>
-                      ))}
+                  {/* Feedback buttons for bot messages */}
+                  {message.type === 'bot' && !message.error && (
+                    <div className="flex items-center gap-3 mt-4 pt-3 border-t border-gray-200">
+                      <span className="text-xs text-gray-500 font-medium">Was this helpful?</span>
+                      <button
+                        onClick={() => handleFeedback(index, 'up')}
+                        className={`p-1.5 rounded-lg transition-all transform hover:scale-110 ${
+                          messageFeedback[index] === 'up'
+                            ? 'bg-emerald-100 text-emerald-600'
+                            : 'hover:bg-gray-100 text-gray-400 hover:text-emerald-600'
+                        }`}
+                        title="Helpful"
+                      >
+                        <ThumbsUp size={16} className={messageFeedback[index] === 'up' ? 'fill-current' : ''} />
+                      </button>
+                      <button
+                        onClick={() => handleFeedback(index, 'down')}
+                        className={`p-1.5 rounded-lg transition-all transform hover:scale-110 ${
+                          messageFeedback[index] === 'down'
+                            ? 'bg-red-100 text-red-600'
+                            : 'hover:bg-gray-100 text-gray-400 hover:text-red-600'
+                        }`}
+                        title="Not helpful"
+                      >
+                        <ThumbsDown size={16} className={messageFeedback[index] === 'down' ? 'fill-current' : ''} />
+                      </button>
                     </div>
                   )}
                   

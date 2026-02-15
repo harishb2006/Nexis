@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Ticket, AlertCircle, CheckCircle, Clock, User, X, MessageSquare, Save, TrendingUp } from 'lucide-react';
+import { Ticket, AlertCircle, CheckCircle, Clock, User, X, MessageSquare, Save, TrendingUp, BarChart3 } from 'lucide-react';
 import axios from '../axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -144,12 +144,21 @@ export default function AdminDashboard() {
               </h1>
               <p className="text-gray-600 mt-2">Manage customer support tickets and escalations</p>
             </div>
-            <button
-              onClick={() => navigate('/')}
-              className="px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-semibold"
-            >
-              Back to Home
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => navigate('/admin/feedback')}
+                className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold flex items-center gap-2"
+              >
+                <BarChart3 size={20} />
+                AI Feedback Analytics
+              </button>
+              <button
+                onClick={() => navigate('/')}
+                className="px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-semibold"
+              >
+                Back to Home
+              </button>
+            </div>
           </div>
         </div>
 

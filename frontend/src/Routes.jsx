@@ -12,5 +12,6 @@ import OrderConfirmation from "./pages/OrderConfirmation.jsx";
 import OrderSuccess from "./pages/OrderSuccess.jsx";
 import MyOrdersPage from "./pages/myorders.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
+import FeedbackDashboard from "./pages/FeedbackDashboard.jsx";
 
-export { SignupPage, LoginPage, Home, CreateProduct, MyProducts, Cart, ProductDetails, Profile, CreateAddress, SelectAddress, OrderConfirmation, OrderSuccess, MyOrdersPage, AdminDashboard };
+export { SignupPage, LoginPage, Home, CreateProduct, MyProducts, Cart, ProductDetails, Profile, CreateAddress, SelectAddress, OrderConfirmation, OrderSuccess, MyOrdersPage, AdminDashboard, FeedbackDashboard };

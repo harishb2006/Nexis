@@ -300,6 +300,186 @@ export const updateOrderStatus = tool(
   }
 );
 
-export const orderTools = [checkOrder, getMyOrders, getAllOrders, updateOrderStatus];
+/**
+ * Cancel Order
+ * Cancels an order if it is still Processing
+ */
+export const cancelOrder = tool(
+  async ({ orderId, userId = null }) => {
+    await ensureConnection();
+    if (!isValidObjectId(orderId)) return JSON.stringify({ success: false, message: "Invalid order ID" });
+    try {
+      const order = await Order.findById(orderId);
+      if (!order) return JSON.stringify({ success: false, message: "Order not found" });
+      if (userId && order.user.toString() !== userId) return JSON.stringify({ success: false, message: "Access denied." });
+
+      if (order.orderStatus !== "Processing") {
+        return JSON.stringify({ success: false, message: `Cannot cancel an order that is ${order.orderStatus}. Only Processing orders can be cancelled.` });
+      }
+
+      order.orderStatus = "Cancelled";
+      await order.save();
+      return JSON.stringify({ success: true, message: "Order has been successfully cancelled." });
+    } catch (e) { return JSON.stringify({ success: false, message: "Error cancelling order" }); }
+  },
+  {
+    name: "cancel_order",
+    description: "Cancel an order if it has not shipped yet (still Processing).",
+    schema: z.object({
+      orderId: z.string().describe("The order ID to cancel"),
+      userId: z.string().optional().describe("Authenticated user ID"),
+    })
+  }
+);
+
+/**
+ * Return Order
+ * Initiates a return and sets refundStatus to Processing
+ */
+export const returnOrder = tool(
+  async ({ orderId, reason, userId = null }) => {
+    await ensureConnection();
+    if (!isValidObjectId(orderId)) return JSON.stringify({ success: false, message: "Invalid order ID" });
+    try {
+      const order = await Order.findById(orderId);
+      if (!order) return JSON.stringify({ success: false, message: "Order not found" });
+      if (userId && order.user.toString() !== userId) return JSON.stringify({ success: false, message: "Access denied." });
+
+      if (order.orderStatus !== "Delivered") {
+        return JSON.stringify({ success: false, message: "Only Delivered orders can be returned." });
+      }
+      if (order.refundStatus === "Processing" || order.refundStatus === "Refunded") {
+        return JSON.stringify({ success: false, message: "A return/refund is already in progress or completed." });
+      }
+
+      order.refundStatus = "Processing";
+      await order.save();
+      return JSON.stringify({ success: true, message: "Return request initiated. Refund is now Processing." });
+    } catch (e) { return JSON.stringify({ success: false, message: "Error initiating return" }); }
+  },
+  {
+    name: "return_order",
+    description: "Initiates a return and refund request for a delivered order.",
+    schema: z.object({
+      orderId: z.string().describe("The order ID to return"),
+      reason: z.string().optional().describe("Reason for return"),
+      userId: z.string().optional().describe("Authenticated user ID"),
+    })
+  }
+);
+
+/**
+ * Check Refund Status
+ */
+export const checkRefundStatus = tool(
+  async ({ orderId, userId = null }) => {
+    await ensureConnection();
+    if (!isValidObjectId(orderId)) return JSON.stringify({ success: false, message: "Invalid order ID format." });
+    try {
+      const order = await Order.findById(orderId).lean();
+      if (!order) return JSON.stringify({ success: false, message: "Order not found." });
+      if (userId && order.user.toString() !== userId) return JSON.stringify({ success: false, message: "Access denied." });
+
+      return JSON.stringify({
+        success: true,
+        orderId: order._id,
+        refundStatus: order.refundStatus || "Not Requested",
+      });
+    } catch (e) { return JSON.stringify({ success: false, message: "Error fetching refund status." }); }
+  },
+  {
+    name: "check_refund_status",
+    description: "Check the status of a pending refund for an order.",
+    schema: z.object({
+      orderId: z.string().describe("The order ID to check"),
+      userId: z.string().optional().describe("Authenticated user ID"),
+    })
+  }
+);
+
+/**
+ * Update Shipping Address
+ */
+export const updateAddress = tool(
+  async ({ orderId, country, city, address1, address2, zipCode, userId = null }) => {
+    await ensureConnection();
+    if (!isValidObjectId(orderId)) return JSON.stringify({ success: false, message: "Invalid order ID" });
+    try {
+      const order = await Order.findById(orderId);
+      if (!order) return JSON.stringify({ success: false, message: "Order not found" });
+      if (userId && order.user.toString() !== userId) return JSON.stringify({ success: false, message: "Access denied." });
+
+      if (order.orderStatus !== "Processing") {
+        return JSON.stringify({ success: false, message: "Address can only be updated while the order is Processing." });
+      }
+
+      if (country) order.shippingAddress.country = country;
+      if (city) order.shippingAddress.city = city;
+      if (address1) order.shippingAddress.address1 = address1;
+      if (address2 !== undefined) order.shippingAddress.address2 = address2;
+      if (zipCode) order.shippingAddress.zipCode = zipCode;
+
+      await order.save();
+      return JSON.stringify({ success: true, message: "Shipping address successfully updated." });
+    } catch (e) { return JSON.stringify({ success: false, message: "Error updating address." }); }
+  },
+  {
+    name: "update_address",
+    description: "Update the shipping address of an active order.",
+    schema: z.object({
+      orderId: z.string().describe("The order ID to update"),
+      country: z.string().optional().describe("New Country"),
+      city: z.string().optional().describe("New City"),
+      address1: z.string().optional().describe("New Address Line 1"),
+      address2: z.string().optional().describe("New Address Line 2"),
+      zipCode: z.number().optional().describe("New Zip Code"),
+      userId: z.string().optional().describe("Authenticated user ID"),
+    })
+  }
+);
+
+/**
+ * Track Order
+ */
+export const trackOrder = tool(
+  async ({ orderId, userId = null }) => {
+    await ensureConnection();
+    if (!isValidObjectId(orderId)) return JSON.stringify({ success: false, message: "Invalid order ID format." });
+    try {
+      const order = await Order.findById(orderId).lean();
+      if (!order) return JSON.stringify({ success: false, message: `Order #${orderId.slice(-6)} not found.` });
+      if (userId && order.user.toString() !== userId) return JSON.stringify({ success: false, message: "Access denied." });
+
+      return JSON.stringify({
+        success: true,
+        orderId: order._id,
+        status: order.orderStatus,
+        trackingNumber: order.trackingNumber || "Not yet assigned",
+        estimatedDelivery: order.orderStatus === "Delivered" ? "Already Delivered" : "3-5 business days from shipment",
+        shippingCity: order.shippingAddress.city,
+      });
+    } catch (error) { return JSON.stringify({ success: false, message: "Error tracking order." }); }
+  },
+  {
+    name: "track_order",
+    description: "Get precise tracking information and status for an order.",
+    schema: z.object({
+      orderId: z.string().describe("The order ID to track"),
+      userId: z.string().optional().describe("Authenticated user ID"),
+    })
+  }
+);
+
+export const orderTools = [
+  checkOrder,
+  getMyOrders,
+  getAllOrders,
+  updateOrderStatus,
+  cancelOrder,
+  returnOrder,
+  checkRefundStatus,
+  updateAddress,
+  trackOrder
+];
 
 export default orderTools;

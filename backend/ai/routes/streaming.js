@@ -38,10 +38,6 @@ router.post(
     // Get conversation history
     const conversationHistory = await MemoryService.getHistory(actualThreadId);
 
-    console.log(
-      `💬 Streaming chat: "${question}" [Thread: ${actualThreadId}${userId ? `, User: ${userId}` : ""}]`
-    );
-
     // Set headers for Server-Sent Events
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
@@ -98,7 +94,6 @@ router.post(
       res.write("data: [DONE]\n\n");
       res.end();
     } catch (error) {
-      console.error("❌ Error in streaming endpoint:", error);
 
       res.write(
         `data: ${JSON.stringify({

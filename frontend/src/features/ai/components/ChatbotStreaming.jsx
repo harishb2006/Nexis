@@ -92,13 +92,11 @@ export default function ChatbotStreaming() {
               const event = JSON.parse(data);
               handleStreamEvent(event);
             } catch (e) {
-              console.error('Failed to parse SSE data:', e);
             }
           }
         }
       }
     } catch (error) {
-      console.error('Stream error:', error);
       const errorMessage = {
         type: 'bot',
         text: "Sorry, I'm having trouble connecting right now. Please try again later.",
@@ -118,7 +116,6 @@ export default function ChatbotStreaming() {
         // Save threadId for future messages in this conversation
         if (!threadId) {
           setThreadId(event.threadId);
-          console.log('Thread initialized:', event.threadId);
         }
         break;
 
@@ -218,9 +215,7 @@ export default function ChatbotStreaming() {
         answer: message?.text,
         userEmail: userEmail || null,
       });
-      console.log(`Feedback sent: ${feedbackType}`);
     } catch (error) {
-      console.error('Failed to send feedback:', error);
     }
   };
 

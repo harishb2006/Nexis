@@ -19,106 +19,126 @@ dotenv.config();
 const router = express.Router();
 
 router.post(
-    "/create-user",
-    upload.single("file"), // Expect file to be named "file"
-    catchAsyncErrors(async (req, res, next) => {
-      console.log("Creating user...");
-      const { name, email, password } = req.body;
-  
-      const userEmail = await User.findOne({ email });
-      if (userEmail) {
-        if (req.file) {
-          const filepath = path.join(__dirname, "../uploads", req.file.filename);
-          try {
-            fs.unlinkSync(filepath); // Delete the file if user already exists
-          } catch (err) {
-            console.log("Error removing file:", err);
-            return res.status(500).json({ message: "Error removing file" });
-          }
-        }
-        return next(new ErrorHandler("User already exists", 400));
-      }
-  
-      let fileUrl = "";
+  "/create-user",
+  upload.single("file"), // Expect file to be named "file"
+  catchAsyncErrors(async (req, res, next) => {
+    const { name, email, password, role } = req.body;
+
+    const userEmail = await User.findOne({ email });
+    if (userEmail) {
       if (req.file) {
-        fileUrl = path.join("uploads", req.file.filename); // Construct file URL
+        const filepath = path.join(__dirname, "../uploads", req.file.filename);
+        try {
+          fs.unlinkSync(filepath); // Delete the file if user already exists
+        } catch (err) {
+          return res.status(500).json({ message: "Error removing file" });
+        }
       }
-  
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await User.create({
-        name,
-        email,
-        password: hashedPassword,
-        avatar: {
-          public_id: req.file?.filename || "",
-          url: fileUrl,
-        },
-      });
-  
-      res.status(201).json({ success: true, user});
-    })
+      return next(new ErrorHandler("User already exists", 400));
+    }
+
+    let fileUrl = "";
+    if (req.file) {
+      fileUrl = path.join("uploads", req.file.filename); // Construct file URL
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: role || "user",
+      avatar: {
+        public_id: req.file?.filename || "",
+        url: fileUrl,
+      },
+    });
+
+    res.status(201).json({ success: true, user });
+  })
+);
+
+router.post("/login", catchAsyncErrors(async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return next(new ErrorHandler("Please provide email and password", 400));
+  }
+  const user = await User.findOne({ email }).select("+password");
+  if (!user) {
+    return next(new ErrorHandler("Invalid Email or Password", 401));
+  }
+  const isPasswordMatched = await bcrypt.compare(password, user.password);
+  if (!isPasswordMatched) {
+    return next(new ErrorHandler("Invalid Email or Password", 401));
+  }
+  // Generate JWT token with 7 days expiry
+  const token = jwt.sign(
+    { id: user._id, email: user.email, role: user.role },
+    process.env.JWT_SECRET || "randomtoken1234567890",
+    { expiresIn: "7d" }
   );
 
-  router.post("/login", catchAsyncErrors(async (req, res, next) => {
-    console.log("Logging in user...");
-    console.log("Request body:", req.body);
-    const { email, password } = req.body;
-    console.log("Email:", email, "Password:", password);
-    if (!email || !password) {
-        return next(new ErrorHandler("Please provide email and password", 400));
-    }
-    const user = await User.findOne({ email }).select("+password");
-    console.log("User found:", user ? "Yes" : "No");
-    if (!user) {
-        return next(new ErrorHandler("Invalid Email or Password", 401));
-    }
-    const isPasswordMatched = await bcrypt.compare(password, user.password);
-    console.log("Password matched:", isPasswordMatched)
-    if (!isPasswordMatched) {
-        return next(new ErrorHandler("Invalid Email or Password", 401));
-    }
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: user._id, email: user.email },
-      process.env.JWT_SECRET || "randomtoken1234567890",
-      { expiresIn: "1h" }
-  );
-
-  // Set token in an HttpOnly cookie
+  // Set token in an HttpOnly cookie (7 days)
   res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // use true only in production with HTTPS
-      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // None for production, Lax for development
-      maxAge: 3600000, // 1 hour
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
   user.password = undefined; // Remove password from response
   res.status(200).json({
     success: true,
-    token, 
+    token,
     user,
   });
-  
+
+}));
+
+router.get("/getuser", isAuthenticatedUser, catchAsyncErrors(async (req, res, next) => {
+  // Return current authenticated user from cookie
+  res.status(200).json({
+    success: true,
+    user: {
+      _id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+      avatar: req.user.avatar,
+      phoneNumber: req.user.phoneNumber,
+    },
+  });
+}));
+
+router.post("/logout", catchAsyncErrors(async (req, res, next) => {
+  res.cookie("token", "", {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
 }));
 
 router.get("/profile", isAuthenticatedUser, catchAsyncErrors(async (req, res, next) => {
   const { email } = req.query;
   if (!email) {
-      return next(new ErrorHandler("Please provide an email", 400));
+    return next(new ErrorHandler("Please provide an email", 400));
   }
   const user = await User.findOne({ email });
   if (!user) {
-      return next(new ErrorHandler("User not found", 404));
+    return next(new ErrorHandler("User not found", 404));
   }
   res.status(200).json({
-      success: true,
-      user: {
-          name: user.name,
-          email: user.email,
-          phoneNumber: user.phoneNumber,
-          avatarUrl: user.avatar.url
-      },
-      addresses: user.addresses,
+    success: true,
+    user: {
+      name: user.name,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      avatarUrl: user.avatar.url
+    },
+    addresses: user.addresses,
   });
 }));
 
@@ -127,36 +147,36 @@ router.post("/add-address", isAuthenticatedUser, catchAsyncErrors(async (req, re
 
   const user = await User.findOne({ email });
   if (!user) {
-      return next(new ErrorHandler("User not found", 404));
+    return next(new ErrorHandler("User not found", 404));
   }
   const newAddress = {
-      country,
-      city,
-      address1,
-      address2,
-      zipCode,
-      addressType,
+    country,
+    city,
+    address1,
+    address2,
+    zipCode,
+    addressType,
   };
   user.addresses.push(newAddress);
   await user.save();
   res.status(201).json({
-      success: true,
-      addresses: user.addresses,
+    success: true,
+    addresses: user.addresses,
   });
 }));
 
 router.get("/addresses", isAuthenticatedUser, catchAsyncErrors(async (req, res, next) => {
   const { email } = req.query;
   if (!email) {
-      return next(new ErrorHandler("Please provide an email", 400));
+    return next(new ErrorHandler("Please provide an email", 400));
   }
   const user = await User.findOne({ email });
   if (!user) {
-      return next(new ErrorHandler("User not found", 404));
+    return next(new ErrorHandler("User not found", 404));
   }
   res.status(200).json({
-      success: true,
-      addresses: user.addresses,
+    success: true,
+    addresses: user.addresses,
   });
 }
 ));

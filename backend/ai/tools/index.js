@@ -67,7 +67,6 @@ export async function executeTool(toolName, args, context = {}) {
     const result = await tool.invoke(enhancedArgs);
     return result;
   } catch (error) {
-    console.error(`Error executing tool ${toolName}:`, error);
     return JSON.stringify({
       success: false,
       error: error.message,

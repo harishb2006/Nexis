@@ -21,8 +21,6 @@ router.post(
       });
     }
 
-    console.log(`💬 Chat request: "${question}"`);
-
     try {
       const result = await generateAnswer(question, history);
 
@@ -37,7 +35,6 @@ router.post(
         },
       });
     } catch (error) {
-      console.error("Error in chat endpoint:", error);
       res.status(500).json({
         success: false,
         message: "Failed to generate response. Please try again.",

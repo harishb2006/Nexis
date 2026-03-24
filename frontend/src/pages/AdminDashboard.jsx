@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Ticket, AlertCircle, CheckCircle, Clock, User, X, MessageSquare, Save, TrendingUp, BarChart3 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Ticket, AlertCircle, CheckCircle, Clock, User, X, MessageSquare, Save, TrendingUp, BarChart3, Library, Upload, Trash2, RefreshCw, FileText } from 'lucide-react';
 import axios from '../axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -15,6 +15,13 @@ export default function AdminDashboard() {
   const [newNote, setNewNote] = useState('');
   const [resolution, setResolution] = useState('');
 
+  // Knowledge Base State
+  const [activeTab, setActiveTab] = useState('tickets');
+  const [documents, setDocuments] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [ingesting, setIngesting] = useState(false);
+  const fileInputRef = useRef(null);
+
   // Check if user is admin
   useEffect(() => {
     if (!user.email) {
@@ -22,7 +29,7 @@ export default function AdminDashboard() {
       navigate('/login');
       return;
     }
-    
+
     if (user.role !== 'admin') {
       alert('Access denied. Admin privileges required.');
       navigate('/');
@@ -31,9 +38,71 @@ export default function AdminDashboard() {
   }, [user, navigate]);
 
   useEffect(() => {
-    fetchTickets();
-    fetchStats();
-  }, [filter]);
+    if (activeTab === 'tickets') {
+      fetchTickets();
+      fetchStats();
+    } else if (activeTab === 'knowledge-base') {
+      fetchDocuments();
+    }
+  }, [filter, activeTab]);
+
+  const fetchDocuments = async () => {
+    try {
+      const { data } = await axios.get('/api/v2/chat/documents');
+      setDocuments(data.documents || []);
+    } catch (error) {
+      console.error("Failed to fetch documents", error);
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setUploading(true);
+    try {
+      await axios.post('/api/v2/chat/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      alert('Document uploaded successfully!');
+      fetchDocuments();
+    } catch (error) {
+      console.error("Upload failed", error);
+      alert('Failed to upload document');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDeleteDocument = async (filename) => {
+    if (!window.confirm(`Are you sure you want to delete ${filename}?`)) return;
+
+    try {
+      await axios.delete(`/api/v2/chat/documents/${filename}`);
+      alert('Document deleted');
+      fetchDocuments();
+    } catch (error) {
+      console.error("Delete failed", error);
+      alert('Failed to delete document');
+    }
+  };
+
+  const handleIngest = async () => {
+    setIngesting(true);
+    try {
+      const { data } = await axios.post('/api/v2/chat/ingest');
+      alert(`Knowledge base updated! Ingested ${data.data?.chunksIngested || 0} chunks from ${data.data?.files?.length || 0} files.`);
+    } catch (error) {
+      console.error("Ingest failed", error);
+      alert('Failed to rebuild knowledge base');
+    } finally {
+      setIngesting(false);
+    }
+  };
 
   const fetchTickets = async () => {
     try {
@@ -42,7 +111,15 @@ export default function AdminDashboard() {
       const { data } = await axios.get(`/api/v2/tickets/admin/tickets${queryParams}`);
       setTickets(data.tickets);
     } catch (error) {
-      console.error('Error fetching tickets:', error);
+      console.error("Failed to fetch tickets:", error);
+      if (error.response?.status === 401) {
+        alert("Your session has expired or is invalid. Please log in again.");
+        localStorage.removeItem('shophub_user');
+        navigate('/login');
+        return;
+      }
+      const errMsg = error.response?.data?.message || error.message;
+      alert(`Failed to load tickets. Error: ${errMsg}`);
     } finally {
       setLoading(false);
     }
@@ -53,7 +130,6 @@ export default function AdminDashboard() {
       const { data } = await axios.get('/api/v2/tickets/admin/tickets/stats');
       setStats(data.stats);
     } catch (error) {
-      console.error('Error fetching stats:', error);
     }
   };
 
@@ -69,7 +145,6 @@ export default function AdminDashboard() {
         setSelectedTicket(null);
       }
     } catch (error) {
-      console.error('Error updating ticket:', error);
       alert('Failed to update ticket status');
     }
   };
@@ -80,14 +155,13 @@ export default function AdminDashboard() {
       fetchTickets();
       alert('Ticket assigned to you');
     } catch (error) {
-      console.error('Error assigning ticket:', error);
       alert('Failed to assign ticket');
     }
   };
 
   const handleAddNote = async (ticketId) => {
     if (!newNote.trim()) return;
-    
+
     try {
       await axios.post(`/api/v2/tickets/admin/tickets/${ticketId}/notes`, {
         text: newNote,
@@ -98,7 +172,6 @@ export default function AdminDashboard() {
       const { data } = await axios.get(`/api/v2/tickets/admin/tickets/${ticketId}`);
       setSelectedTicket(data.ticket);
     } catch (error) {
-      console.error('Error adding note:', error);
       alert('Failed to add note');
     }
   };
@@ -142,28 +215,125 @@ export default function AdminDashboard() {
                 <Ticket className="text-slate-700" size={36} />
                 Admin Support Dashboard
               </h1>
-              <p className="text-gray-600 mt-2">Manage customer support tickets and escalations</p>
+              <p className="text-gray-600 mt-2">Manage customer support tickets and AI knowledge base</p>
             </div>
             <div className="flex gap-3">
+              <button
+                onClick={() => setActiveTab('tickets')}
+                className={`px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-colors ${activeTab === 'tickets' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              >
+                <Ticket size={20} />
+                Tickets
+              </button>
+              <button
+                onClick={() => setActiveTab('knowledge-base')}
+                className={`px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-colors ${activeTab === 'knowledge-base' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              >
+                <Library size={20} />
+                Knowledge Base
+              </button>
               <button
                 onClick={() => navigate('/admin/feedback')}
                 className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-semibold flex items-center gap-2"
               >
                 <BarChart3 size={20} />
-                AI Feedback Analytics
-              </button>
-              <button
-                onClick={() => navigate('/')}
-                className="px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-semibold"
-              >
-                Back to Home
+                Analytics
               </button>
             </div>
           </div>
         </div>
 
+        {activeTab === 'knowledge-base' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <Library className="text-blue-500" />
+                    AI Knowledge Base Documents
+                  </h2>
+                  <p className="text-gray-600 text-sm mt-1">
+                    Upload .txt or .md files for the AI agent to use as context when answering user questions.
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    accept=".txt,.md,.pdf"
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors font-semibold flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <Upload size={18} />
+                    {uploading ? 'Uploading...' : 'Upload File'}
+                  </button>
+                  <button
+                    onClick={handleIngest}
+                    disabled={ingesting}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <RefreshCw size={18} className={ingesting ? "animate-spin" : ""} />
+                    {ingesting ? 'Rebuilding Matrix...' : 'Rebuild Knowledge Base'}
+                  </button>
+                </div>
+              </div>
+
+              {documents.length === 0 ? (
+                <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                  <FileText className="mx-auto text-gray-400 mb-3" size={48} />
+                  <p className="text-gray-600 font-medium text-lg">No documents uploaded yet</p>
+                  <p className="text-gray-500 text-sm mt-2">Upload policies, FAQs, or manuals to empower your AI support agent.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <th className="px-6 py-4 text-sm font-bold text-gray-700">Filename</th>
+                        <th className="px-6 py-4 text-sm font-bold text-gray-700">Size</th>
+                        <th className="px-6 py-4 text-sm font-bold text-gray-700">Uploaded Date</th>
+                        <th className="px-6 py-4 text-sm font-bold text-gray-700 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {documents.map((doc, i) => (
+                        <tr key={i} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-2">
+                            <FileText size={16} className="text-blue-500" />
+                            {doc.filename}
+                          </td>
+                          <td className="px-6 py-4 text-gray-600 text-sm">
+                            {(doc.size / 1024).toFixed(1)} KB
+                          </td>
+                          <td className="px-6 py-4 text-gray-600 text-sm">
+                            {new Date(doc.createdAt).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <button
+                              onClick={() => handleDeleteDocument(doc.filename)}
+                              className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                              title="Delete Document"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Stats Cards */}
-        {stats && (
+        {activeTab === 'tickets' && stats && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
               <div className="flex items-center justify-between">
@@ -208,105 +378,108 @@ export default function AdminDashboard() {
         )}
 
         {/* Filter Tabs */}
-        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
-          <div className="flex gap-3 flex-wrap">
-            {['all', 'open', 'in-progress', 'resolved', 'closed'].map((status) => (
-              <button
-                key={status}
-                onClick={() => setFilter(status)}
-                className={`px-6 py-2.5 rounded-lg font-semibold transition-all capitalize ${
-                  filter === status
-                    ? 'bg-slate-700 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {status === 'all' ? 'All Tickets' : status.replace('-', ' ')}
-              </button>
-            ))}
-          </div>
-        </div>
+        {activeTab === 'tickets' && (
+          <>
+            <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+              <div className="flex gap-3 flex-wrap">
+                {['all', 'open', 'in-progress', 'resolved', 'closed'].map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setFilter(status)}
+                    className={`px-6 py-2.5 rounded-lg font-semibold transition-all capitalize ${filter === status
+                      ? 'bg-slate-700 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                  >
+                    {status === 'all' ? 'All Tickets' : status.replace('-', ' ')}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        {/* Tickets List */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          {loading ? (
-            <div className="p-12 text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-slate-700"></div>
-              <p className="mt-4 text-gray-600">Loading tickets...</p>
+            {/* Tickets List */}
+            <div className="bg-white rounded-xl shadow-md overflow-hidden">
+              {loading ? (
+                <div className="p-12 text-center">
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-slate-700"></div>
+                  <p className="mt-4 text-gray-600">Loading tickets...</p>
+                </div>
+              ) : tickets.length === 0 ? (
+                <div className="p-12 text-center">
+                  <CheckCircle className="mx-auto text-gray-400 mb-4" size={48} />
+                  <p className="text-gray-600 text-lg">No tickets found</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b-2 border-gray-200">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Ticket ID</th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Customer</th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Reason</th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Urgency</th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Status</th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Created</th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {tickets.map((ticket) => (
+                        <tr key={ticket._id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4">
+                            <span className="font-mono text-sm font-bold text-blue-600">{ticket.ticketId}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <User size={16} className="text-gray-400" />
+                              <span className="text-sm">
+                                {ticket.email || ticket.userId?.email || 'Anonymous'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <p className="text-sm text-gray-700 max-w-xs truncate">{ticket.reason}</p>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getUrgencyColor(ticket.urgency)}`}>
+                              {ticket.urgency.toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(ticket.status)}`}>
+                              {ticket.status.replace('-', ' ').toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {new Date(ticket.createdAt).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => setSelectedTicket(ticket)}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold"
+                              >
+                                View
+                              </button>
+                              {ticket.status === 'open' && (
+                                <button
+                                  onClick={() => handleAssignToMe(ticket._id)}
+                                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-semibold"
+                                >
+                                  Assign to Me
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
-          ) : tickets.length === 0 ? (
-            <div className="p-12 text-center">
-              <CheckCircle className="mx-auto text-gray-400 mb-4" size={48} />
-              <p className="text-gray-600 text-lg">No tickets found</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b-2 border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Ticket ID</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Customer</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Reason</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Urgency</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Status</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Created</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {tickets.map((ticket) => (
-                    <tr key={ticket._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <span className="font-mono text-sm font-bold text-blue-600">{ticket.ticketId}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <User size={16} className="text-gray-400" />
-                          <span className="text-sm">
-                            {ticket.email || ticket.userId?.email || 'Anonymous'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="text-sm text-gray-700 max-w-xs truncate">{ticket.reason}</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getUrgencyColor(ticket.urgency)}`}>
-                          {ticket.urgency.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(ticket.status)}`}>
-                          {ticket.status.replace('-', ' ').toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        {new Date(ticket.createdAt).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => setSelectedTicket(ticket)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold"
-                          >
-                            View
-                          </button>
-                          {ticket.status === 'open' && (
-                            <button
-                              onClick={() => handleAssignToMe(ticket._id)}
-                              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-semibold"
-                            >
-                              Assign to Me
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+          </>
+        )}
 
         {/* Ticket Detail Modal */}
         {selectedTicket && (

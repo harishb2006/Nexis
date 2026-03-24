@@ -100,7 +100,6 @@ export const checkRefundEligibility = tool(
           : "Unfortunately, this order is not eligible for return based on our policy.",
       });
     } catch (error) {
-      console.error("Error checking refund eligibility:", error);
       return JSON.stringify({
         success: false,
         message: "Failed to check refund eligibility",
@@ -137,7 +136,6 @@ export const escalateToHuman = tool(
           briefing = await MemoryService.generateBriefing(threadId);
           await MemoryService.escalateThread(threadId, reason);
         } catch (error) {
-          console.error("Error generating briefing:", error);
         }
       }
 
@@ -161,8 +159,6 @@ export const escalateToHuman = tool(
         } : null,
       });
 
-      console.log("✅ Support ticket created:", ticketId);
-
       return JSON.stringify({
         success: true,
         ticketId: ticket.ticketId,
@@ -182,7 +178,6 @@ export const escalateToHuman = tool(
           : null,
       });
     } catch (error) {
-      console.error("Error escalating to human:", error);
       return JSON.stringify({
         success: false,
         message: "Failed to escalate issue",

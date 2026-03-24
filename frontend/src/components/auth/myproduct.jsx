@@ -32,7 +32,6 @@ function Myproduct({ _id, name, images, description, price }) {
                 window.location.reload();
             }
         } catch (err) {
-            console.error("Error deleting product:", err);
             alert("Failed to delete product.");
         }
     };

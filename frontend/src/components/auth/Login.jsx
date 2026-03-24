@@ -3,9 +3,9 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import styles from "../../styles/styles";
 import axios from "../../axiosConfig";
 // import axios from 'axios'
-import { useDispatch, useSelector } from "react-redux"; 
+import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../../store/userActions";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 // Ensure axios sends cookies with requests
 // axios.defaults.withCredentials = true;
@@ -21,29 +21,28 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       const response = await axios.post(
         "/api/v2/user/login",
         { email, password },
         { withCredentials: true }
       );
-      console.log(response.data);
-      
+
       // Store full user info including role
       dispatch(setUser({
         email: response.data.user.email,
         role: response.data.user.role,
         name: response.data.user.name,
       }));
-      
+
       // Show role-based success message
       const isAdmin = response.data.user.role === 'admin';
       alert(isAdmin ? "Admin logged in successfully!" : "Logged in successfully!");
-      
+
       // Redirect to admin dashboard if admin, otherwise home
       navigate(isAdmin ? "/admin/dashboard" : "/");
     } catch (error) {
-      console.error("There was an error logging in!", error);
       alert(error.response?.data?.message || "Login failed. Please check your credentials.");
     }
   };
@@ -136,8 +135,9 @@ const Login = () => {
               </button>
             </div>
 
-            <div className={`${styles.noramlFlex} w-full`}>
+            <div className={`${styles.noramlFlex} w-full flex-col mt-4`}>
               <h4>Not have any account?</h4>
+              <p className="text-xs text-gray-500 mt-2">Admin login: admin@shophub.com / admin</p>
             </div>
           </form>
         </div>

@@ -19,23 +19,15 @@ export default function ProductDetails() {
 		const fetchProduct = async () => {
 			try {
 				const response = await axios.get(`/api/v2/product/product/${id}`);
-				console.log("Fetched product:", response.data.product);
 				setProduct(response.data.product); // Ensure correct state setting
 				setLoading(false);
 			} catch (err) {
-				console.error("Error fetching product:", err);
 				setError(err);
 				setLoading(false);
 			}
 		};
 		fetchProduct();
 	}, [id]);
-	useEffect(() => {
-		if (product !== null) {
-			console.log("Updated product state:", product);
-			console.log("Product name:", product.name);
-		}
-	}, [product]);
 
 	const handleIncrement = () => {
 		setQuantity((prevQuantity) => prevQuantity + 1);

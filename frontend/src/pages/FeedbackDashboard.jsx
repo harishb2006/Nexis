@@ -45,7 +45,6 @@ export default function FeedbackDashboard() {
       const response = await axios.get('/api/v2/chat/feedback/analytics', { params });
       setAnalytics(response.data.data);
     } catch (error) {
-      console.error('Failed to fetch analytics:', error);
     } finally {
       setLoading(false);
     }
@@ -59,7 +58,6 @@ export default function FeedbackDashboard() {
       const response = await axios.get('/api/v2/chat/feedback/list', { params });
       setFeedbackList(response.data.data.feedback);
     } catch (error) {
-      console.error('Failed to fetch feedback list:', error);
     }
   };
 

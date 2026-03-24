@@ -42,7 +42,6 @@ export class MemoryService {
 
       return thread;
     } catch (error) {
-      console.error("Error getting/creating thread:", error);
       throw error;
     }
   }
@@ -82,7 +81,6 @@ export class MemoryService {
       await thread.save();
       return thread;
     } catch (error) {
-      console.error("Error adding message:", error);
       throw error;
     }
   }
@@ -108,7 +106,6 @@ export class MemoryService {
         content: msg.content,
       }));
     } catch (error) {
-      console.error("Error getting history:", error);
       return [];
     }
   }
@@ -120,7 +117,6 @@ export class MemoryService {
     try {
       return await ChatThread.findOne({ threadId });
     } catch (error) {
-      console.error("Error getting thread:", error);
       throw error;
     }
   }
@@ -135,7 +131,6 @@ export class MemoryService {
         .limit(limit)
         .select("threadId metadata createdAt");
     } catch (error) {
-      console.error("Error getting user threads:", error);
       return [];
     }
   }
@@ -155,7 +150,6 @@ export class MemoryService {
       await thread.save();
       return thread;
     } catch (error) {
-      console.error("Error updating sentiment:", error);
       throw error;
     }
   }
@@ -177,7 +171,6 @@ export class MemoryService {
 
       return thread;
     } catch (error) {
-      console.error("Error escalating thread:", error);
       throw error;
     }
   }
@@ -218,7 +211,6 @@ export class MemoryService {
 
       return briefing;
     } catch (error) {
-      console.error("Error generating briefing:", error);
       throw error;
     }
   }
@@ -237,7 +229,6 @@ export class MemoryService {
 
       return result.deletedCount;
     } catch (error) {
-      console.error("Error cleaning up threads:", error);
       throw error;
     }
   }

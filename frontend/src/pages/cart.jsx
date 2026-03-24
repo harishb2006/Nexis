@@ -25,10 +25,8 @@ const Cart = () => {
           // })
       .then((res) => {
         setProducts(res.data.cart.map(product => ({quantity: product.quantity,...product.productId, })));
-        console.log("Products fetched:", res.data.cart);
       })
       .catch((err) => {
-        console.error("Error fetching products:", err);
       });
   }, [email]);
 

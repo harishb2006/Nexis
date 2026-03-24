@@ -42,6 +42,11 @@ export const TOOL_DISPLAY_NAMES = {
   update_product_stock: "Updating Stock",
   check_refund_eligibility: "Checking Refund Eligibility",
   escalate_to_human: "Escalating to Human Support",
+  cancel_order: "Cancelling Order",
+  return_order: "Initiating Return",
+  check_refund_status: "Checking Refund Status",
+  update_address: "Updating Shipping Address",
+  track_order: "Tracking Order",
 };
 
 /**
@@ -50,8 +55,9 @@ export const TOOL_DISPLAY_NAMES = {
 export const ORDER_STATUS_TRANSITIONS = {
   Processing: ["Shipped", "Cancelled"],
   Shipped: ["Delivered", "Cancelled"],
-  Delivered: [],
+  Delivered: ["Returned"],
   Cancelled: [],
+  Returned: [],
 };
 
 /**

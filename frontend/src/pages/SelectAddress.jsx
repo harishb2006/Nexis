@@ -44,7 +44,7 @@ const SelectAddress = () => {
                     setAddresses([]);
                 }
             }) .catch ((err) => {
-                console.error('Error fetching addresses:', err);
+
                 setError(err.response?.data?.message || err.message || 'An unexpected error occurred.');
             }) .finally (() =>setLoading(false));
         }, [userEmail]);

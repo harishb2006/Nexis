@@ -222,10 +222,10 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user");
   const [visible, setVisible] = useState(false);
   const [avatar, setAvatar] = useState(null);
   const [errors, setErrors] = useState({});
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -260,6 +260,7 @@ const Signup = () => {
     newForm.append("name", name);
     newForm.append("email", email);
     newForm.append("password", password);
+    newForm.append("role", role);
 
     try {
       const res = await axios.post("/api/v2/user/create-user", newForm, {
@@ -270,7 +271,6 @@ const Signup = () => {
       });
 
       alert("User created successfully!");
-      console.log(res.data);
 
       // ✅ Dispatch email to Redux store
       dispatch(setemail(email));
@@ -280,7 +280,6 @@ const Signup = () => {
 
     } catch (err) {
       alert(err.response?.data?.message || err.message);
-      console.error(err.response?.data || err.message);
     }
   };
 
@@ -301,9 +300,8 @@ const Signup = () => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className={`mt-1 block w-full px-3 py-2 border ${
-                  errors.name ? "border-red-500" : "border-gray-300"
-                } rounded-md shadow-sm sm:text-sm`}
+                className={`mt-1 block w-full px-3 py-2 border ${errors.name ? "border-red-500" : "border-gray-300"
+                  } rounded-md shadow-sm sm:text-sm`}
               />
               {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
             </div>
@@ -314,9 +312,8 @@ const Signup = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`mt-1 block w-full px-3 py-2 border ${
-                  errors.email ? "border-red-500" : "border-gray-300"
-                } rounded-md shadow-sm sm:text-sm`}
+                className={`mt-1 block w-full px-3 py-2 border ${errors.email ? "border-red-500" : "border-gray-300"
+                  } rounded-md shadow-sm sm:text-sm`}
               />
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
             </div>
@@ -328,9 +325,8 @@ const Signup = () => {
                   type={visible ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`mt-1 block w-full px-3 py-2 border ${
-                    errors.password ? "border-red-500" : "border-gray-300"
-                  } rounded-md shadow-sm sm:text-sm`}
+                  className={`mt-1 block w-full px-3 py-2 border ${errors.password ? "border-red-500" : "border-gray-300"
+                    } rounded-md shadow-sm sm:text-sm`}
                 />
                 {visible ? (
                   <AiOutlineEye
@@ -347,6 +343,18 @@ const Signup = () => {
                 )}
               </div>
               {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Role</label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
             </div>
 
             <div>

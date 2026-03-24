@@ -53,7 +53,6 @@ function scanUploadsFolder(uploadsPath) {
   const files = [];
 
   if (!fs.existsSync(uploadsPath)) {
-    console.log(`📁 Creating uploads folder: ${uploadsPath}`);
     fs.mkdirSync(uploadsPath, { recursive: true });
     return files;
   }
@@ -75,6 +74,8 @@ function scanUploadsFolder(uploadsPath) {
   return files;
 }
 
+import { getCollection } from "../core/localVectorStore.js";
+
 /**
  * Ingest all documents from uploads folder
  */
@@ -83,50 +84,34 @@ export async function ingestFromUploads() {
     throw new Error("COHERE_API_KEY is not configured");
   }
 
-  // Connect to MongoDB
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(config.database.url);
-    console.log("✅ Connected to MongoDB");
-  }
+  const collection = await getCollection();
 
-  // Get uploads folder path
-  const uploadsPath = path.join(__dirname, "../../uploads");
-  console.log(`📂 Scanning uploads folder: ${uploadsPath}`);
+  // Get knowledge base documents folder path
+  const docsPath = path.join(__dirname, "../data");
 
   // Scan for documents
-  const files = scanUploadsFolder(uploadsPath);
+  const files = scanUploadsFolder(docsPath);
 
   if (files.length === 0) {
-    console.log("⚠️  No documents found in uploads folder");
-    console.log(`📝 Supported formats: ${SUPPORTED_DOC_EXTENSIONS.join(", ")}`);
     return { chunksIngested: 0, files: [] };
   }
-
-  console.log(`📚 Found ${files.length} document(s):`);
-  files.forEach((file, idx) => {
-    console.log(`   ${idx + 1}. ${path.basename(file)}`);
-  });
 
   let totalChunks = 0;
   const processedFiles = [];
 
   // Process each file
   for (const filePath of files) {
-    console.log(`\n📄 Processing: ${path.basename(filePath)}`);
-
     try {
       // Load document
       const docs = await loadDocument(filePath);
 
       // Split into chunks
       const chunks = await textSplitter.splitDocuments(docs);
-      console.log(`   🔹 Chunks: ${chunks.length}`);
 
-      // Delete existing chunks from this source
-      const deleteResult = await KnowledgeBase.deleteMany({ source: filePath });
-      if (deleteResult.deletedCount > 0) {
-        console.log(`   🗑️  Removed ${deleteResult.deletedCount} old chunks`);
-      }
+      // Delete existing chunks from this source in ChromaDB
+      await collection.delete({
+        where: { source: filePath }
+      });
 
       // Generate embeddings in batches
       const batchSize = 96;
@@ -135,27 +120,35 @@ export async function ingestFromUploads() {
         const batch = chunks.slice(i, i + batchSize);
         const batchTexts = batch.map((doc) => doc.pageContent);
 
-        console.log(
-          `   ⏳ Creating embeddings (batch ${Math.floor(i / batchSize) + 1})...`
-        );
-
         const batchEmbeddings = await embedDocuments(batchTexts);
 
-        // Prepare documents for insertion
-        const documents = batch.map((chunk, idx) => ({
-          content: chunk.pageContent,
-          embedding: batchEmbeddings[idx],
-          source: filePath,
-          metadata: {
-            fileName: path.basename(filePath),
-            ...chunk.metadata,
-          },
-          chunkIndex: i + idx,
-        }));
+        // Prepare for insertion to ChromaDB
+        const ids = [];
+        const embeddings = [];
+        const metadatas = [];
+        const documents = [];
 
-        // Insert into database
-        await KnowledgeBase.insertMany(documents);
-        totalChunks += documents.length;
+        batch.forEach((chunk, idx) => {
+          ids.push(`${path.basename(filePath)}_${i + idx}_${Date.now()}`);
+          embeddings.push(batchEmbeddings[idx]);
+          metadatas.push({
+            source: filePath,
+            fileName: path.basename(filePath),
+            chunkIndex: i + idx,
+            ...chunk.metadata,
+          });
+          documents.push(chunk.pageContent);
+        });
+
+        // Insert into ChromaDB
+        await collection.add({
+          ids,
+          embeddings,
+          metadatas,
+          documents
+        });
+
+        totalChunks += batch.length;
       }
 
       processedFiles.push({
@@ -163,13 +156,10 @@ export async function ingestFromUploads() {
         chunks: chunks.length,
       });
 
-      console.log(`   ✅ Ingested ${chunks.length} chunks`);
     } catch (error) {
-      console.error(`   ❌ Error processing ${path.basename(filePath)}:`, error.message);
+      console.error(`Error ingesting file ${filePath}:`, error);
     }
   }
-
-  console.log(`\n✅ Total chunks ingested: ${totalChunks}`);
 
   return {
     chunksIngested: totalChunks,
@@ -186,7 +176,6 @@ export async function clearKnowledgeBase() {
   }
 
   const result = await KnowledgeBase.deleteMany({});
-  console.log(`🗑️  Cleared ${result.deletedCount} entries from knowledge base`);
 
   return result.deletedCount;
 }

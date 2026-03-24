@@ -57,7 +57,6 @@ export default function Chatbot() {
 
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
-      console.error('Chat error:', error);
       const errorMessage = {
         type: 'bot',
         text: "Sorry, I'm having trouble connecting right now. Please try again later.",
@@ -89,9 +88,7 @@ export default function Chatbot() {
         question: messageIndex > 0 ? messages[messageIndex - 1]?.text : null,
         answer: message?.text,
       });
-      console.log(`Feedback sent: ${feedbackType}`);
     } catch (error) {
-      console.error('Failed to send feedback:', error);
     }
   };
 

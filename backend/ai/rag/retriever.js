@@ -7,66 +7,36 @@ import { embedQuery, cosineSimilarity } from "../core/embeddings.js";
 import KnowledgeBase from "../models/knowledgeBase.js";
 import config from "../config/index.js";
 
-/**
- * Connect to MongoDB if not already connected
- */
-async function ensureConnection() {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(config.database.url);
-  }
-}
+import { getCollection } from "../core/localVectorStore.js";
 
-/**
- * Retrieve relevant chunks from knowledge base using vector search
- * @param {string} query - User query to search for
- * @param {number} k - Number of results to return
- * @returns {Promise<Array>} Array of relevant chunks with scores
- */
 export async function retrieveRelevantChunks(query, k = 3) {
   if (!config.embeddings.apiKey) {
     throw new Error("COHERE_API_KEY is not set in environment variables");
   }
 
-  await ensureConnection();
-
   try {
     // Create embedding for the user query
-    console.log(`🔍 Searching for: "${query}"`);
     const queryVector = await embedQuery(query);
-    console.log(`📊 Query embedding created (${queryVector.length} dimensions)`);
 
-    // Retrieve all documents from knowledge base
-    const allDocs = await KnowledgeBase.find({}).lean();
+    const collection = await getCollection();
+    const results = await collection.query({
+      queryEmbeddings: [queryVector],
+      nResults: k,
+    });
 
-    if (allDocs.length === 0) {
-      console.log("⚠️  Knowledge base is empty. Please run ingestion first.");
+    if (!results.documents || results.documents[0].length === 0) {
       return [];
     }
 
-    console.log(`📚 Comparing against ${allDocs.length} chunks...`);
-
-    // Calculate similarity scores
-    const results = allDocs.map((doc) => ({
-      content: doc.content,
-      source: doc.source,
-      score: cosineSimilarity(queryVector, doc.embedding),
-      metadata: doc.metadata,
+    // Map ChromaDB results back to our expected format
+    return results.documents[0].map((docContent, idx) => ({
+      content: docContent,
+      source: results.metadatas[0][idx]?.source || 'Unknown',
+      score: 1.0 - (results.distances[0][idx] || 0), // convert distance back to similarity roughly
+      metadata: results.metadatas[0][idx] || {},
     }));
-
-    // Sort by score and return top k
-    results.sort((a, b) => b.score - a.score);
-    const topResults = results.slice(0, k);
-
-    console.log(`✅ Found ${topResults.length} relevant chunks`);
-    topResults.forEach((result, idx) => {
-      console.log(
-        `   ${idx + 1}. Score: ${result.score.toFixed(4)} - ${result.content.substring(0, 60)}...`
-      );
-    });
-
-    return topResults;
   } catch (error) {
-    console.error("❌ Error during retrieval:", error.message);
+    console.error("Error retrieving chunks from Chroma:", error);
     throw error;
   }
 }

@@ -81,14 +81,11 @@ export async function checkVectorSearchIndex() {
     const vectorIndex = indexes.find(idx => idx.name === 'vector_index');
     
     if (vectorIndex) {
-      console.log('✅ MongoDB Atlas Vector Search index "vector_index" found');
       return true;
     } else {
-      console.warn('⚠️  Vector Search index "vector_index" not found. Please create it in MongoDB Atlas.');
       return false;
     }
   } catch (error) {
-    console.warn('⚠️  Could not check vector search index:', error.message);
     return false;
   }
 }

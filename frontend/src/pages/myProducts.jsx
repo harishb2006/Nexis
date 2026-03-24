@@ -10,7 +10,6 @@ export default function MyProducts() {
     const [error, setError] = useState(null);
     // Get the email from Redux state
     const state = useSelector((state) => state);
-console.log(state);
     const email = useSelector((state) => state.user.email);
 
     useEffect(() => {
@@ -29,7 +28,6 @@ console.log(state);
                 setLoading(false);
             })
             .catch((err) => {
-                console.error("Error fetching products:", err);
                 setError(err.message);
                 setLoading(false);
             });

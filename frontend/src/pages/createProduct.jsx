@@ -49,7 +49,6 @@ const CreateProduct = () => {
                   }
               })
               .catch((err) => {
-                  console.error("Error fetching product:", err);
               });
       }
   }, [id, isEdit]);
@@ -107,7 +106,6 @@ const CreateProduct = () => {
             }
         }
     } catch (err) {
-            console.error("Error creating/updating product:", err);
             alert("Failed to save product. Please check the data and try again.");
         }
     };

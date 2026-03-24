@@ -52,7 +52,6 @@ const OrderConfirmation = () => {
                 const total = processedCartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
                 setTotalPrice(total);
             } catch (err) {
-                console.error('Error fetching data:', err);
                 setError(err.response?.data?.message || err.message || 'An unexpected error occurred.');
             } finally {
                 setLoading(false);
@@ -85,11 +84,9 @@ const OrderConfirmation = () => {
                 paypalOrderData,
             };
             const response = await axios.post('/api/v2/orders/place-order', payload);
-            console.log('Order placed successfully:', response.data);
             // Navigate to an order success page or display a success message
             navigate('/order-success'); // Adjust route as needed
         } catch (error) {
-            console.error('Error placing order:', error);
             // Optionally update error state to display an error message to the user
             setError(error.response?.data?.message || error.message || 'An unexpected error occurred.');
         }
@@ -216,13 +213,11 @@ const OrderConfirmation = () => {
                                          onApprove={async (data, actions) => {
                                              // Captures funds from the transaction
                                              const order = await actions.order.capture();
-                                             console.log('PayPal order success:', order);
  
                                              // Call place order with PayPal data
                                              handlePlaceOrder('paypal', order);
                                          }}
                                          onError={(err) => {
-                                             console.error('PayPal checkout error:', err);
                                          }}
                                      />
                                  </PayPalScriptProvider>

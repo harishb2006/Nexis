@@ -28,8 +28,6 @@ router.post(
       });
     }
 
-    console.log(`💬 Chat request: "${question}"`);
-
     try {
       const result = await execute(question, history, { userId, email });
 
@@ -45,7 +43,7 @@ router.post(
         },
       });
     } catch (error) {
-      console.error("Error in chat endpoint:", error);
+      console.error("❌ Chat error:", error);
       res.status(500).json({
         success: false,
         message: "Failed to generate response. Please try again.",
@@ -90,7 +88,6 @@ router.get("/suggestions", (req, res) => {
 router.post(
   "/ingest",
   catchAsyncErrors(async (req, res) => {
-    console.log("📚 Starting document ingestion...");
 
     const result = await ingestFromUploads();
 
@@ -132,8 +129,6 @@ router.post(
       userId: userId || null,
       userEmail: userEmail || null,
     });
-
-    console.log(`👍👎 Feedback saved: ${feedbackType} - Category: ${category} (ID: ${feedback._id})`);
 
     res.status(200).json({
       success: true,

@@ -9,7 +9,7 @@ axios.defaults.withCredentials = true;
 
 export default function Profile() {
 	const email = useSelector((state) => state.user.email);
-	console.log(email);
+
 	const [personalDetails, setPersonalDetails] = useState({
 		name: "",
 		email: "",
@@ -44,10 +44,8 @@ export default function Profile() {
 			.then((res) => {
 				setPersonalDetails(res.data.user);
 				setAddresses(res.data.addresses);
-				console.log("User fetched:", res.data.user);
-				console.log("Addresses fetched:", res.data.addresses);
 			})
-			.catch((err) => console.error(err));
+			.catch((err) => {});
 	}, [email]);
 
 	const handleAddAddress = () => {

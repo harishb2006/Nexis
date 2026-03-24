@@ -9,9 +9,16 @@ dotenv.config();
 export const config = {
   // LLM Configuration
   llm: {
-    provider: "cerebras",
-    model: process.env.CEREBRAS_MODEL || "llama-3.3-70b",
-    apiKey: process.env.CEREBRAS_API_KEY,
+    provider: "groq",
+    model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+    groq: {
+      baseUrl: process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1",
+      apiKey: process.env.GROQ_API_KEY,
+    },
+    ollama: {
+      baseUrl: process.env.OLLAMA_BASE_URL || "http://localhost:11434",
+      model: process.env.OLLAMA_MODEL || "mistral:7b",
+    },
     maxTokens: parseInt(process.env.MAX_TOKENS) || 800,
     temperature: parseFloat(process.env.TEMPERATURE) || 0.2,
   },
@@ -49,7 +56,7 @@ export const config = {
  */
 export function validateConfig() {
   const required = [
-    { key: "CEREBRAS_API_KEY", value: config.llm.apiKey },
+    { key: "GROQ_API_KEY", value: config.llm.groq.apiKey },
     { key: "COHERE_API_KEY", value: config.embeddings.apiKey },
     { key: "DB_URL", value: config.database.url },
   ];
@@ -57,8 +64,6 @@ export function validateConfig() {
   const missing = required.filter((r) => !r.value);
 
   if (missing.length > 0) {
-    console.error("❌ Missing required environment variables:");
-    missing.forEach((m) => console.error(`   - ${m.key}`));
     return false;
   }
 

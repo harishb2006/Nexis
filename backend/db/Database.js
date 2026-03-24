@@ -6,12 +6,12 @@ dotenv.config();
 
 const connectDatabase = () => {
     mongoose
-        .connect(process.env.DB_URL) 
+        .connect(process.env.DB_URL)
         .then((data) => {
-            console.log(`MongoDB connected with server: ${data.connection.host}`);
+              console.log("Database connected successfully");
         })
         .catch((err) => {
-            console.error(`Database connection failed: ${err.message}`);    
+            console.error("Database connection error:", err);
             process.exit(1); 
         });
 };

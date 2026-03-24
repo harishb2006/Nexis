@@ -3,28 +3,24 @@ import connectDatabase from "./db/Database.js";
 import dotenv from "dotenv";
 
 process.on("uncaughtException", (err) => {
-    console.log(`Error: ${err.message}`);
-    console.log("Shutting down the server for handling uncaught exception");
+    console.error("❌ Uncaught Exception:", err);
     process.exit(1);
 });
 
 if (process.env.NODE_ENV !== "PRODUCTION") {
     dotenv.config({
-        path: "config/.env",
+        path: ".env",
     });
 }
 
 connectDatabase();
 
 const server = app.listen(process.env.PORT, () => {
-    console.log(
-        `Server is running on http://localhost:${process.env.PORT}` 
-    );
+    console.log(`Server is running on http://localhost:${process.env.PORT}`);
 });
 
 process.on("unhandledRejection", (err) => {
-    console.error(`Unhandled Rejection: ${err.message}`); 
-    console.log("Shutting down the server due to unhandled promise rejection.");
+    console.error("❌ Unhandled Rejection:", err);
     server.close(() => {
         process.exit(1); 
     });

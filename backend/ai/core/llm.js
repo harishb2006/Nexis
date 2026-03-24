@@ -1,26 +1,108 @@
 /**
  * LLM Client
- * Cerebras LLM integration with optimized configuration
+ * Groq LLM integration with Ollama fallback
  */
-import { Cerebras } from "@cerebras/cerebras_cloud_sdk";
+import { Ollama } from "ollama";
 import config from "../config/index.js";
 
 // Singleton client instance
 let clientInstance = null;
 
 /**
- * Get or create the Cerebras client
+ * Get or create the Ollama client
  */
-export function getClient() {
+export function getOllamaClient() {
   if (!clientInstance) {
-    if (!config.llm.apiKey) {
-      throw new Error("CEREBRAS_API_KEY is not configured");
+    if (!config.llm.ollama.baseUrl) {
+      throw new Error("OLLAMA_BASE_URL is not configured");
     }
-    clientInstance = new Cerebras({
-      apiKey: config.llm.apiKey,
+    clientInstance = new Ollama({
+      host: config.llm.ollama.baseUrl,
     });
   }
   return clientInstance;
+}
+
+/**
+ * Generate a chat completion using Ollama
+ */
+export async function completeWithOllama(messages, options = {}) {
+  const client = getOllamaClient();
+
+  const response = await client.chat({
+    model: options.model || config.llm.ollama.model,
+    messages,
+    stream: options.stream || false,
+    options: {
+      temperature: options.temperature || config.llm.temperature,
+      num_predict: options.maxTokens || config.llm.maxTokens,
+    },
+    ...(options.tools && !options.stream && { tools: options.tools }),
+  });
+
+  if (options.stream) {
+    // Return the async iterable directly compatible with OpenAI stream iteration
+    return response;
+  }
+
+  // Debug logging
+  console.log('🔍 Ollama Response:', JSON.stringify(response, null, 2));
+
+  // Convert Ollama response format to OpenAI-compatible format
+  return {
+    choices: [
+      {
+        message: {
+          role: response.message.role,
+          content: response.message.content,
+          ...(response.message.tool_calls && {
+            tool_calls: response.message.tool_calls,
+          }),
+        },
+        finish_reason: response.done ? "stop" : "length",
+      },
+    ],
+  };
+}
+
+/**
+ * Generate a chat completion using Groq
+ */
+export async function completeWithGroq(messages, options = {}) {
+  const url = `${config.llm.groq.baseUrl}/chat/completions`;
+  const body = {
+    model: options.model || config.llm.model,
+    messages,
+    temperature: options.temperature || config.llm.temperature,
+    max_tokens: options.maxTokens || config.llm.maxTokens,
+    stream: options.stream || false,
+  };
+
+  if (options.tools) {
+    body.tools = options.tools;
+  }
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${config.llm.groq.apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Groq API Error: ${response.status} ${text}`);
+  }
+
+  if (options.stream) {
+    return response.body;
+  }
+
+  const data = await response.json();
+  console.log('🔍 Groq Response:', JSON.stringify(data, null, 2));
+  return data;
 }
 
 /**
@@ -29,18 +111,25 @@ export function getClient() {
  * @param {Object} options - Optional overrides
  */
 export async function complete(messages, options = {}) {
-  const client = getClient();
+  if (config.llm.provider === 'ollama') {
+    try {
+      const fallbackOptions = { ...options };
+      delete fallbackOptions.model;
+      return await completeWithOllama(messages, fallbackOptions);
+    } catch (error) {
+      console.error("⚠️ Ollama failed:", error.message);
+      throw error;
+    }
+  }
 
-  const completion = await client.chat.completions.create({
-    messages,
-    model: options.model || config.llm.model,
-    max_tokens: options.maxTokens || config.llm.maxTokens,
-    temperature: options.temperature || config.llm.temperature,
-    ...(options.tools && { tools: options.tools }),
-    ...(options.toolChoice && { tool_choice: options.toolChoice }),
-  });
-
-  return completion;
+  try {
+    return await completeWithGroq(messages, options);
+  } catch (error) {
+    console.error("⚠️ Groq API failed, falling back to local Ollama (Mistral):", error.message);
+    const fallbackOptions = { ...options };
+    delete fallbackOptions.model;
+    return await completeWithOllama(messages, fallbackOptions);
+  }
 }
 
 /**
@@ -58,7 +147,9 @@ export async function completeWithTools(messages, tools, options = {}) {
 }
 
 export default {
-  getClient,
+  getOllamaClient,
+  completeWithOllama,
+  completeWithGroq,
   complete,
   completeWithTools,
 };

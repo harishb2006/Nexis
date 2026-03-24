@@ -40,9 +40,7 @@ export default function CartProduct({ _id, name, images, quantity, price }) {
 			productId: _id,
 			quantity,
 		  });
-		  console.log("Quantity updated:", res.data);
 		} catch (err) {
-		  console.error("Error updating quantity:", err);
 		}
 	  };
 

@@ -37,7 +37,6 @@ import { useState, useEffect } from 'react';
              );
              fetchOrders();
          } catch (err) {
-             console.error(err);
              alert(err.response?.data?.message || 'Error cancelling order');
          }
      };

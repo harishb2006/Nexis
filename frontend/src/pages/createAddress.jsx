@@ -40,7 +40,6 @@ const CreateAddress = () => {
                 navigate("/profile");
             }
         } catch (err) {
-            console.error("Error adding address:", err);
             alert("Failed to add address. Please check the data and try again.");
         }
     };

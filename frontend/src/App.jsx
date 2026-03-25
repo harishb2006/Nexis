@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { LoginPage, SignupPage, Home, CreateProduct, MyProducts, Cart, ProductDetails, Profile, CreateAddress, SelectAddress, OrderConfirmation, OrderSuccess, MyOrdersPage, AdminDashboard, FeedbackDashboard } from "./Routes";
+import { LoginPage, SignupPage, Home, CreateProduct, MyProducts, Cart, ProductDetails, Profile, CreateAddress, SelectAddress, OrderConfirmation, OrderSuccess, MyOrdersPage, AdminDashboard, FeedbackDashboard, Wishlist } from "./Routes";
 import ChatbotStreaming from './features/ai/components/ChatbotStreaming';
 import { useDispatch } from 'react-redux';
 import { setUser } from './store/userActions';
@@ -43,6 +43,7 @@ const App = () => {
         <Route path="/create-product/:id" element={<CreateProduct />} />
         <Route path="/my-products" element={<MyProducts />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/profile" element={<Profile />} />
         <Route path='/create-address' element={<CreateAddress />} />

@@ -25,7 +25,7 @@ const app = express();
 
 const allowedOrigins = [
   'http://localhost:5173',
-   'https://ecommerce-follow-along-1-5pwu.onrender.com'
+  'https://ecommerce-follow-along-1-5pwu.onrender.com'
 
 ];
 const corsOptions = {
@@ -43,38 +43,18 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 
-// const allowedOrigins = process.env.ALLOWED_ORIGINS
-//   ? process.env.ALLOWED_ORIGINS.split(',')
-//   : [];
-
-// const corsOptions = {
-//   origin: function (origin, callback) {
-//     if (!origin || allowedOrigins.includes(origin)) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error('CORS policy: The origin is not allowed'), false);
-//     }
-//   },
-//   credentials: true,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-// };
-
-// app.use(cors(corsOptions));
-
-
-
 
 app.use(express.json());
 app.use(cookieParser());
-app.use("/",express.static("uploads"));
+app.use("/", express.static("uploads"));
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 
 // Configuration for environment variables
 if (process.env.NODE_ENV !== "PRODUCTION") {
-    // Load environment variables from the .env file if the environment is not production
-    dotenv.config({
-        path: "backend/config/.env",
-    });
+  // Load environment variables from the .env file if the environment is not production
+  dotenv.config({
+    path: "backend/config/.env",
+  });
 }
 // Serve static files for uploads and products
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

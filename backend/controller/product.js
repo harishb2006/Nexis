@@ -21,7 +21,7 @@ const validateProductData = (data) => {
   return errors;
 };
 router.post(
-  "/create-product", isAuthenticatedUser, 
+  "/create-product", isAuthenticatedUser,
   pupload.array("images", 10),
   async (req, res) => {
     const { name, description, category, tags, price, stock, email } = req.body;
@@ -93,21 +93,21 @@ router.get("/get-products", async (req, res) => {
   }
 });
 
-router.get('/my-products',  isAuthenticatedUser, async (req, res) => {
+router.get('/my-products', isAuthenticatedUser, async (req, res) => {
   const { email } = req.query;
   try {
-      const products = await Product.find({ email });
-      const productsWithFullImageUrl = products.map(product => {
-          if (product.images && product.images.length > 0) {
-              product.images = product.images.map(imagePath => {
-                  return imagePath;
-              });
-          }
-          return product;
-      });
-      res.status(200).json({ products: productsWithFullImageUrl });
+    const products = await Product.find({ email });
+    const productsWithFullImageUrl = products.map(product => {
+      if (product.images && product.images.length > 0) {
+        product.images = product.images.map(imagePath => {
+          return imagePath;
+        });
+      }
+      return product;
+    });
+    res.status(200).json({ products: productsWithFullImageUrl });
   } catch (err) {
-      res.status(500).json({ error: 'Server error. Could not fetch products.' });
+    res.status(500).json({ error: 'Server error. Could not fetch products.' });
   }
 }
 );
@@ -115,13 +115,13 @@ router.get('/my-products',  isAuthenticatedUser, async (req, res) => {
 router.get('/product/:id', isAuthenticatedUser, async (req, res) => {
   const { id } = req.params;
   try {
-      const product = await Product.findById(id);
-      if (!product) {
-          return res.status(404).json({ error: 'Product not found.' });
-      }
-      res.status(200).json({ product });
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found.' });
+    }
+    res.status(200).json({ product });
   } catch (err) {
-      res.status(500).json({ error: 'Server error. Could not fetch product.' });
+    res.status(500).json({ error: 'Server error. Could not fetch product.' });
   }
 });
 
@@ -129,143 +129,208 @@ router.put('/update-product/:id', isAuthenticatedUser, pupload.array('images', 1
   const { id } = req.params;
   const { name, description, category, tags, price, stock, email } = req.body;
   try {
-      const existingProduct = await Product.findById(id);
-      if (!existingProduct) {
-          return res.status(404).json({ error: 'Product not found.' });
-      }
-      let updatedImages = existingProduct.images;
-      if (req.files && req.files.length > 0) {
-          updatedImages = req.files.map((file) => {
-              return `/products/${path.basename(file.path)}`;
-          });
-      }
-      const validationErrors = validateProductData({
-          name,
-          description,
-          category,
-          price,
-          stock,
-          email,
+    const existingProduct = await Product.findById(id);
+    if (!existingProduct) {
+      return res.status(404).json({ error: 'Product not found.' });
+    }
+    let updatedImages = existingProduct.images;
+    if (req.files && req.files.length > 0) {
+      updatedImages = req.files.map((file) => {
+        return `/products/${path.basename(file.path)}`;
       });
-      if (validationErrors.length > 0) {
-          return res.status(400).json({ errors: validationErrors });
-      }
-      existingProduct.name = name;
-      existingProduct.description = description;
-      existingProduct.category = category;
-      existingProduct.tags = tags;
-      existingProduct.price = price;
-      existingProduct.stock = stock;
-      existingProduct.email = email;
-      existingProduct.images = updatedImages;
-      await existingProduct.save();
-      res.status(200).json({
-          message: '✅ Product updated successfully',
-          product: existingProduct,
-      });
+    }
+    const validationErrors = validateProductData({
+      name,
+      description,
+      category,
+      price,
+      stock,
+      email,
+    });
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ errors: validationErrors });
+    }
+    existingProduct.name = name;
+    existingProduct.description = description;
+    existingProduct.category = category;
+    existingProduct.tags = tags;
+    existingProduct.price = price;
+    existingProduct.stock = stock;
+    existingProduct.email = email;
+    existingProduct.images = updatedImages;
+    await existingProduct.save();
+    res.status(200).json({
+      message: '✅ Product updated successfully',
+      product: existingProduct,
+    });
   } catch (err) {
-      res.status(500).json({ error: 'Server error. Could not update product.' });
+    res.status(500).json({ error: 'Server error. Could not update product.' });
   }
 });
 
 router.delete('/delete-product/:id', isAuthenticatedUser, async (req, res) => {
   const { id } = req.params;
   try {
-      const existingProduct = await Product.findById(id);
-      if (!existingProduct) {
-          return res.status(404).json({ error: 'Product not found.' });
-      }
-      await existingProduct.deleteOne();
-      res.status(200).json({ message: '✅ Product deleted successfully' });
+    const existingProduct = await Product.findById(id);
+    if (!existingProduct) {
+      return res.status(404).json({ error: 'Product not found.' });
+    }
+    await existingProduct.deleteOne();
+    res.status(200).json({ message: '✅ Product deleted successfully' });
   } catch (err) {
-      res.status(500).json({ error: 'Server error. Could not delete product.' });
+    res.status(500).json({ error: 'Server error. Could not delete product.' });
   }
 });
 
 router.post('/cart', isAuthenticatedUser, async (req, res) => {
   try {
-      const { userId, productId, quantity } = req.body;
-      const email = userId;
-      if (!email) {
-          return res.status(400).json({ message: 'Email is required' });
-      }
-      if (!mongoose.Types.ObjectId.isValid(productId)) {
-          return res.status(400).json({ message: 'Invalid productId' });
-      }
-      if (!quantity || quantity < 1) {
-          return res.status(400).json({ message: 'Quantity must be at least 1' });
-      }
-      const user = await User.findOne({ email });
-      if (!user) {
-          return res.status(404).json({ message: 'User not found' });
-      }
-      const product = await Product.findById(productId);
-      if (!product) {
-          return res.status(404).json({ message: 'Product not found' });
-      }
-      const cartItemIndex = user.cart.findIndex(
-          (item) => item.productId.toString() === productId
-      );
-      if (cartItemIndex > -1) {
-          user.cart[cartItemIndex].quantity += quantity;
-      } else {
-          user.cart.push({ productId, quantity });
-      }
-      await user.save();
-      res.status(200).json({
-          message: 'Cart updated successfully',
-          cart: user.cart,
-      });
+    const { userId, productId, quantity } = req.body;
+    const email = userId;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: 'Invalid productId' });
+    }
+    if (!quantity || quantity < 1) {
+      return res.status(400).json({ message: 'Quantity must be at least 1' });
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    const cartItemIndex = user.cart.findIndex(
+      (item) => item.productId.toString() === productId
+    );
+    if (cartItemIndex > -1) {
+      user.cart[cartItemIndex].quantity += quantity;
+    } else {
+      user.cart.push({ productId, quantity });
+    }
+    await user.save();
+    res.status(200).json({
+      message: 'Cart updated successfully',
+      cart: user.cart,
+    });
   } catch (error) {
-      res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: 'Server Error' });
   }
 });
 
 // GET cart details endpoint
 router.get('/cartproducts', isAuthenticatedUser, async (req, res) => {
   try {
-      const { email } = req.query;
-      if (!email) {
-          return res.status(400).json({ error: 'Email query parameter is required' });
-      }
-      const user = await User.findOne({ email }).populate({
-          path: 'cart.productId',
-          model: 'Product'
-      });
-      if (!user) {
-          return res.status(404).json({ error: 'User not found' });
-      }
-      res.status(200).json({
-          message: 'Cart retrieved successfully',
-          cart: user.cart
-      });
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: 'Email query parameter is required' });
+    }
+    const user = await User.findOne({ email }).populate({
+      path: 'cart.productId',
+      model: 'Product'
+    });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.status(200).json({
+      message: 'Cart retrieved successfully',
+      cart: user.cart
+    });
   } catch (err) {
-      res.status(500).json({ error: 'Server Error' });
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
 router.put('/cartproduct/quantity', isAuthenticatedUser, async (req, res) => {
   const { email, productId, quantity } = req.body;
   if (!email || !productId || quantity === undefined) {
-      return res.status(400).json({ error: 'Email, productId, and quantity are required' });
+    return res.status(400).json({ error: 'Email, productId, and quantity are required' });
   }
   try {
-      const user = await User.findOne({ email });
-      if (!user) {
-          return res.status(404).json({ error: 'User not found' });
-      }
-      const cartProduct = user.cart.find(item => item.productId.toString() === productId);
-      if (!cartProduct) {
-          return res.status(404).json({ error: 'Product not found in cart' });
-      }
-      cartProduct.quantity = quantity;
-      await user.save();
-      res.status(200).json({
-          message: 'Cart product quantity updated successfully',
-          cart: user.cart
-      });
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const cartProduct = user.cart.find(item => item.productId.toString() === productId);
+    if (!cartProduct) {
+      return res.status(404).json({ error: 'Product not found in cart' });
+    }
+    cartProduct.quantity = quantity;
+    await user.save();
+    res.status(200).json({
+      message: 'Cart product quantity updated successfully',
+      cart: user.cart
+    });
   } catch (err) {
-      res.status(500).json({ error: 'Server Error' });
+    res.status(500).json({ error: 'Server Error' });
+  }
+});
+
+router.post('/wishlist', isAuthenticatedUser, async (req, res) => {
+  try {
+    const { email, productId } = req.body;
+    if (!email || !productId) {
+      return res.status(400).json({ message: 'Email and productId are required' });
+    }
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: 'Invalid productId' });
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const wishlistIndex = user.wishlist.findIndex(
+      (id) => id.toString() === productId
+    );
+
+    if (wishlistIndex > -1) {
+      // Remove from wishlist if it exists
+      user.wishlist.splice(wishlistIndex, 1);
+    } else {
+      // Add to wishlist if it doesn't exist
+      user.wishlist.push(productId);
+    }
+
+    await user.save();
+    res.status(200).json({
+      message: 'Wishlist updated successfully',
+      wishlist: user.wishlist,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+router.get('/wishlist', isAuthenticatedUser, async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: 'Email query parameter is required' });
+    }
+    const user = await User.findOne({ email }).populate('wishlist');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Fix image paths exactly like in get-products
+    const wishlistProducts = user.wishlist.map((product) => {
+      if (product.images && product.images.length > 0) {
+        // Make a shallow copy if necessary, but returning the raw doc is usually fine or calling .toObject()
+        product.images = product.images.map(imagePath => imagePath);
+      }
+      return product;
+    });
+
+    res.status(200).json({
+      message: 'Wishlist retrieved successfully',
+      wishlist: wishlistProducts
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 

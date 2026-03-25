@@ -26,27 +26,37 @@ export const searchProducts = tool(
     try {
       let filter = {};
 
+      // 1. Clean the query
+      const stopWords = ['suggest', 'me', 'a', 'an', 'the', 'for', 'want', 'looking', 'some', 'any', 'product', 'products', 'to', 'buy'];
+      const keywords = query
+        ? query.toLowerCase().split(' ').filter(word => !stopWords.includes(word) && word.length > 2)
+        : [];
+      const cleanRegexes = keywords.map(kw => new RegExp(kw, "i"));
+
       if (query && category) {
         // Search with category filter
         filter = {
           $and: [
             {
               $or: [
-                { name: { $regex: new RegExp(query, "i") } },
-                { description: { $regex: new RegExp(query, "i") } },
-                { category: { $regex: new RegExp(query, "i") } },
+                { name: { $in: cleanRegexes.length ? cleanRegexes : [new RegExp(query, "i")] } },
+                { description: { $in: cleanRegexes.length ? cleanRegexes : [new RegExp(query, "i")] } },
+                { tags: { $in: cleanRegexes.length ? cleanRegexes : [new RegExp(query, "i")] } },
+                { category: { $in: cleanRegexes.length ? cleanRegexes : [new RegExp(query, "i")] } },
               ],
             },
             { category: { $regex: new RegExp(category, "i") } },
           ],
         };
       } else if (query) {
-        // Search by query in name, description, or category
+        // Search by query in name, description, tags, or category
+        const regexes = cleanRegexes.length ? cleanRegexes : [new RegExp(query, "i")];
         filter = {
           $or: [
-            { name: { $regex: new RegExp(query, "i") } },
-            { description: { $regex: new RegExp(query, "i") } },
-            { category: { $regex: new RegExp(query, "i") } },
+            { name: { $in: regexes } },
+            { description: { $in: regexes } },
+            { tags: { $in: regexes } },
+            { category: { $in: regexes } },
           ],
         };
       } else if (category) {
@@ -54,15 +64,18 @@ export const searchProducts = tool(
         filter.category = { $regex: new RegExp(category, "i") };
       }
 
+      console.log("Searching products with filter:", JSON.stringify(filter));
+
       const products = await Product.find(filter)
-        .select("name category price stock description images tags")
+        .select("name category price stock description images tags sales")
+        .sort({ sales: -1 })
         .limit(limit)
         .lean();
 
       if (products.length === 0) {
         return JSON.stringify({
           success: false,
-          message: "No products found matching your search",
+          message: `No products found matching '${query}'`,
         });
       }
 
@@ -77,12 +90,14 @@ export const searchProducts = tool(
           price: `$${p.price}`,
           inStock: p.stock > 0,
           stockCount: p.stock,
+          sales: p.sales || 0,
           images: p.images || [],
           tags: p.tags || [],
           url: `http://localhost:5173/product/${p._id}`,
         })),
       });
     } catch (error) {
+      console.error("Error in AI product search:", error);
       return JSON.stringify({
         success: false,
         message: "Error searching products",
@@ -92,12 +107,12 @@ export const searchProducts = tool(
   {
     name: "search_products",
     description:
-      "Search for products by name, description, or category. ALWAYS provide a specific 'query' parameter with keywords. Examples: 'laptop', 'shoes', 'iphone'.",
+      "Search for products by name, description, tags, or category. ALWAYS extract the CORE keyword or problem from the user's sentence. Do NOT use full sentences. Example: if user says 'suggest me a phone', pass 'phone'. If user says 'something for dry skin', pass 'dry skin'. The results are automatically sorted by highest sales.",
     schema: z.object({
       query: z
         .string()
         .describe(
-          "REQUIRED: Search keyword extracted from user's question (e.g., 'laptop', 'shoes')"
+          "REQUIRED: Core search keyword extracted from user's question, problems, or symptoms (e.g., 'pimples', 'phone', 'dry skin'). Do NOT include phrases like 'suggest me' or 'I want'."
         ),
       category: z
         .string()

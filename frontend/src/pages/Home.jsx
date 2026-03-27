@@ -45,7 +45,7 @@ export default function Home() {
   const patternStyle = {
     backgroundColor: "#ffffff",
     backgroundImage: `radial-gradient(#cbd5e1 1.5px, transparent 1.5px)`,
-    backgroundSize: '30px 30px',
+    backgroundSize: '25px 25px',
     backgroundAttachment: 'fixed'
   };
 

@@ -80,6 +80,9 @@ export async function completeWithGroq(messages, options = {}) {
 
   if (options.tools) {
     body.tools = options.tools;
+    if (options.toolChoice) {
+      body.tool_choice = options.toolChoice;
+    }
   }
 
   const response = await fetch(url, {

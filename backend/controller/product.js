@@ -77,7 +77,7 @@ router.post(
 // Route: Get all products
 router.get("/get-products", async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().sort({ createdAt: -1 });;
     const productsWithFullImageUrl = products.map((product) => {
       if (product.images && product.images.length > 0) {
         product.images = product.images.map((imagePath) => {

@@ -19,12 +19,12 @@ const AgentState = Annotation.Root({
   // Input
   userQuestion: Annotation({ reducer: (x, y) => y ?? x, default: () => "" }),
   messages: Annotation({ reducer: (x, y) => y ?? x, default: () => [] }),
-
+  
   // Context
   userId: Annotation({ reducer: (x, y) => y ?? x, default: () => null }),
   email: Annotation({ reducer: (x, y) => y ?? x, default: () => null }),
   threadId: Annotation({ reducer: (x, y) => y ?? x, default: () => null }),
-
+  
   // Processing
   context: Annotation({ reducer: (x, y) => y ?? x, default: () => "" }),
   sources: Annotation({ reducer: (x, y) => y ?? x, default: () => [] }),
@@ -34,11 +34,11 @@ const AgentState = Annotation.Root({
   }),
   toolCalls: Annotation({ reducer: (x, y) => y ?? x, default: () => [] }),
   toolResults: Annotation({ reducer: (x, y) => y ?? x, default: () => [] }),
-
+  
   // Output
   finalAnswer: Annotation({ reducer: (x, y) => y ?? x, default: () => "" }),
   eventStream: Annotation({ reducer: (x, y) => y ?? x, default: () => [] }),
-
+  
   // Control
   shouldContinue: Annotation({ reducer: (x, y) => y ?? x, default: () => true }),
   iterationCount: Annotation({ reducer: (x, y) => y ?? x, default: () => 0 }),
@@ -163,7 +163,6 @@ async function decisionNode(state) {
       shouldContinue: false,
     };
   } catch (error) {
-    console.error("❌ Decision Node Error:", error);
     events.push({
       type: EVENT_TYPES.ERROR,
       message: "❌ AI service error",
@@ -402,22 +401,9 @@ export async function* streamExecution(userQuestion, conversationHistory = [], o
 
     // Final result
     if (lastState) {
-      const finalAnswer = lastState.finalAnswer || "I apologize, but I couldn't generate a response.";
-
-      yield { type: EVENT_TYPES.ANSWER_START };
-
-      const words = finalAnswer.split(' ');
-      for (let i = 0; i < words.length; i++) {
-        yield {
-          type: EVENT_TYPES.ANSWER_CHUNK,
-          content: words[i] + (i < words.length - 1 ? ' ' : '')
-        };
-        await new Promise(resolve => setTimeout(resolve, 25));
-      }
-
       yield {
         type: EVENT_TYPES.COMPLETE,
-        answer: finalAnswer,
+        answer: lastState.finalAnswer || "I apologize, but I couldn't generate a response.",
         sources: lastState.sources || [],
         toolsUsed: lastState.toolResults || [],
         sentiment: lastState.sentiment,
@@ -425,7 +411,7 @@ export async function* streamExecution(userQuestion, conversationHistory = [], o
       };
     }
   } catch (error) {
-    console.error("❌ Stream Execution Error:", error);
+
     yield {
       type: EVENT_TYPES.ERROR,
       message: "An error occurred during processing",

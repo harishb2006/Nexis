@@ -86,7 +86,7 @@ const MyOrdersPage = () => {
                                     <div className="text-left sm:text-right">
                                         <p className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-1">Total</p>
                                         <p className="text-2xl font-black text-indigo-600">
-                                            ${order.totalAmount.toFixed(2)}
+                                            ₹{order.totalAmount.toFixed(2)}
                                         </p>
                                     </div>
                                 </div>
@@ -113,7 +113,7 @@ const MyOrdersPage = () => {
                                             {order.orderItems.map((item, index) => (
                                                 <li key={index} className="flex justify-between items-center text-sm border-b border-gray-100 pb-2 last:border-0 last:pb-0">
                                                     <span className="text-gray-800 font-medium truncate pr-4">{item.name} <span className="text-gray-400">x{item.quantity}</span></span>
-                                                    <span className="font-semibold text-gray-900">${(item.price * item.quantity).toFixed(2)}</span>
+                                                    <span className="font-semibold text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</span>
                                                 </li>
                                             ))}
                                         </ul>

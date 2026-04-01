@@ -60,7 +60,7 @@ function Myproduct({ _id, name, images, description, price }) {
 
         <div className="flex items-center justify-between mb-5">
           <div className="bg-indigo-50/80 text-indigo-700 font-black px-3 py-1 rounded-lg text-lg tracking-tight shrink-0 shadow-sm border border-indigo-100/50">
-            ${Number(price).toFixed(2)}
+            ₹{Number(price).toFixed(2)}
           </div>
         </div>
 

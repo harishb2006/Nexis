@@ -63,14 +63,14 @@ function Product({ _id, name, images, description, price, createdAt, userWishlis
   };
 
   const isNewProduct = () => {
-  const now = new Date();
-  const productDate = new Date(createdAt);
+    const now = new Date();
+    const productDate = new Date(createdAt);
 
-  const diffTime = now - productDate;
-  const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    const diffTime = now - productDate;
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
 
-  return diffDays <= 3; // change to 3 or 1 if needed
-};
+    return diffDays <= 3; // change to 3 or 1 if needed
+  };
 
   const currentImage = images && images.length > 0 ? images[currentIndex] : null;
   const backendURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -135,7 +135,7 @@ function Product({ _id, name, images, description, price, createdAt, userWishlis
         <div className="flex justify-between items-start mb-3 gap-2">
           <h3 className="text-xl font-bold text-gray-900 line-clamp-1 group-hover:text-indigo-600 transition-colors">{name}</h3>
           <div className="bg-indigo-50/80 text-indigo-700 font-black px-3 py-1 rounded-lg text-lg tracking-tight shrink-0 shadow-sm border border-indigo-100/50">
-            ${Number(price).toFixed(2)}
+            ₹{Number(price).toFixed(2)}
           </div>
         </div>
         <p className="text-sm text-gray-500 mb-6 line-clamp-2 leading-relaxed">{description}</p>

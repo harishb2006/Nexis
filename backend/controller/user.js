@@ -26,20 +26,12 @@ router.post(
 
     const userEmail = await User.findOne({ email });
     if (userEmail) {
-      if (req.file) {
-        const filepath = path.join(__dirname, "../uploads", req.file.filename);
-        try {
-          fs.unlinkSync(filepath); // Delete the file if user already exists
-        } catch (err) {
-          return res.status(500).json({ message: "Error removing file" });
-        }
-      }
       return next(new ErrorHandler("User already exists", 400));
     }
 
     let fileUrl = "";
     if (req.file) {
-      fileUrl = path.join("uploads", req.file.filename); // Construct file URL
+      fileUrl = req.file.path; // Cloudinary secure URL
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

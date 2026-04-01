@@ -27,7 +27,7 @@ router.post(
     const { name, description, category, tags, price, stock, email } = req.body;
     // Map uploaded files to accessible URLs
     const images = req.files.map((file) => {
-      return `/products/${path.basename(file.path)}`;
+      return file.path;
     });
     // Validate input data
     const validationErrors = validateProductData({
@@ -136,7 +136,7 @@ router.put('/update-product/:id', isAuthenticatedUser, pupload.array('images', 1
     let updatedImages = existingProduct.images;
     if (req.files && req.files.length > 0) {
       updatedImages = req.files.map((file) => {
-        return `/products/${path.basename(file.path)}`;
+        return file.path;
       });
     }
     const validationErrors = validateProductData({

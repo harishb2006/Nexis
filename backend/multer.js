@@ -1,48 +1,35 @@
 import multer from 'multer';
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from 'url';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-// Define directories
-const uploadsDir = path.join(__dirname, "uploads");
-const productsDir = path.join(__dirname, "products");
-// Create directories if they don't exist
-[uploadsDir, productsDir].forEach((dir) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 // Multer storage configuration for general uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadsDir);
-  },
-    filename: function (req, file, cb) {
-      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-      const ext = path.extname(file.originalname);
-      const filename = path.basename(file.originalname, ext);
-      cb(null, `${filename}-${uniqueSuffix}${ext}`);
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'nexis/uploads',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
   },
 });
 
 // Multer storage configuration for product images
-const pstorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, productsDir);
+const pstorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'nexis/products',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
   },
-    filename: function (req, file, cb) {
-      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-      const ext = path.extname(file.originalname);
-      const filename = path.basename(file.originalname, ext);
-      cb(null, `${filename}-${uniqueSuffix}${ext}`);
-    },  
-  });
+});
 
-  // Initialize upload object
-  const upload = multer({ storage: storage });
-  const pupload = multer({ storage: pstorage });
+// Initialize upload object
+const upload = multer({ storage: storage });
+const pupload = multer({ storage: pstorage });
 
-  export { upload, pupload };
+export { upload, pupload };

@@ -6,81 +6,81 @@ import { Plus, Minus, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSelector } from "react-redux";
 
 export default function ProductDetails() {
-    const { id } = useParams();
-	const navigate = useNavigate();
-	const [product, setProduct] = useState(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(null);
-	const [quantity, setQuantity] = useState(1);
-	const [selectedImage, setSelectedImage] = useState(0);
-	const email = useSelector((state) => state.user.email);
- 
-	useEffect(() => {
-		const fetchProduct = async () => {
-			try {
-				const response = await axios.get(`/api/v2/product/product/${id}`);
-				setProduct(response.data.product); // Ensure correct state setting
-				setLoading(false);
-			} catch (err) {
-				setError(err);
-				setLoading(false);
-			}
-		};
-		fetchProduct();
-	}, [id]);
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const email = useSelector((state) => state.user.email);
 
-	const handleIncrement = () => {
-		setQuantity((prevQuantity) => prevQuantity + 1);
-	};
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await axios.get(`/api/v2/product/product/${id}`);
+        setProduct(response.data.product); // Ensure correct state setting
+        setLoading(false);
+      } catch (err) {
+        setError(err);
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id]);
 
-	const handleDecrement = () => {
-		setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
-	};
-	const addtocart = async () => {
-		if (!email) {
-			alert("No user email found! Please login.");
-			return;
-		}
-		try {
-			const response = await axios.post("/api/v2/product/cart",
-				{
-					userId: email,
-					productId: id,
-					quantity: quantity,
-				}
-			);
-			console.log("Added to cart:", response.data);
-			alert("Item added to cart!");
-		} catch (err) {
-			console.error("Error adding to cart:", err);
-		}
-	};
-	if (loading) {
-		return (
-			<div className="flex justify-center items-center h-screen">
-				<div className="text-xl">Loading...</div>
-			</div>
-		);
-	}
-	if (error) {
-		return (
-			<div className="flex justify-center items-center h-screen">
-				<div className="text-red-500 text-xl">
-					Error: {error.message}
-				</div>
-			</div>
-		);
-	}
-	if (!product) {
-		return (
-			<div className="flex justify-center items-center h-screen">
-				<div className="text-gray-500 text-xl">No product found.</div>
-			</div>
-		);
-	}
-	const backendURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-	
-	return (
+  const handleIncrement = () => {
+    setQuantity((prevQuantity) => prevQuantity + 1);
+  };
+
+  const handleDecrement = () => {
+    setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
+  };
+  const addtocart = async () => {
+    if (!email) {
+      alert("No user email found! Please login.");
+      return;
+    }
+    try {
+      const response = await axios.post("/api/v2/product/cart",
+        {
+          userId: email,
+          productId: id,
+          quantity: quantity,
+        }
+      );
+      console.log("Added to cart:", response.data);
+      alert("Item added to cart!");
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+    }
+  };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-red-500 text-xl">
+          Error: {error.message}
+        </div>
+      </div>
+    );
+  }
+  if (!product) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-gray-500 text-xl">No product found.</div>
+      </div>
+    );
+  }
+  const backendURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+  return (
     <>
       <NavBar />
       <div className="min-h-screen bg-gray-50">
@@ -109,7 +109,7 @@ export default function ProductDetails() {
           <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
             <div className="p-8">
               <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">Product Details</h1>
-              
+
               <div className="bg-gray-50 rounded-xl p-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                   {/* Left Section - Product Info */}
@@ -128,9 +128,8 @@ export default function ProductDetails() {
                           <div
                             key={idx}
                             onClick={() => setSelectedImage(idx)}
-                            className={`w-20 h-20 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
-                              selectedImage === idx ? 'border-slate-800 scale-105' : 'border-transparent'
-                            }`}
+                            className={`w-20 h-20 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${selectedImage === idx ? 'border-slate-800 scale-105' : 'border-transparent'
+                              }`}
                           >
                             <img
                               src={`${backendURL}${img}`}
@@ -159,7 +158,7 @@ export default function ProductDetails() {
                         )}
                       </div>
                       <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-white px-8 py-4 rounded-lg shadow-md border border-gray-100">
-                        <p className="text-3xl font-bold text-slate-800">${product.price}</p>
+                        <p className="text-3xl font-bold text-slate-800">₹{product.price}</p>
                       </div>
                     </div>
                   </div>
@@ -199,11 +198,10 @@ export default function ProductDetails() {
                         {['37', '38', '39', '40', '41', '42'].map((size) => (
                           <button
                             key={size}
-                            className={`px-4 py-2 rounded-lg border-2 transition-all ${
-                              size === '38'
+                            className={`px-4 py-2 rounded-lg border-2 transition-all ${size === '38'
                                 ? 'bg-slate-800 border-slate-800 text-white font-semibold'
                                 : 'bg-white border-gray-200 text-gray-700 hover:border-slate-400'
-                            }`}
+                              }`}
                           >
                             {size}
                           </button>

@@ -21,7 +21,7 @@ const OrderConfirmation = () => {
         if (!addressId || !email) {
             navigate('/select-address'); // Redirect if no address selected or email missing
             return;
-        }   
+        }
         const fetchData = async () => {
             try {
                 const addressResponse = await axios.get('/api/v2/user/addresses', {
@@ -38,14 +38,14 @@ const OrderConfirmation = () => {
                 const backendURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
                 // Map cart items to include full image URLs
                 const processedCartItems = cartData.cart.map((item) => ({
-                  product: item.productId._id,
-                  name: item.productId.name,
-                  price: item.productId.price,
-                  image: item.productId.images.map(
-                    (imagePath) =>
-                      `${backendURL}/${imagePath}`
-                  ),
-                  quantity: item.quantity,
+                    product: item.productId._id,
+                    name: item.productId.name,
+                    price: item.productId.price,
+                    image: item.productId.images.map(
+                        (imagePath) =>
+                            `${backendURL}/${imagePath}`
+                    ),
+                    quantity: item.quantity,
                 }));
                 setCartItems(processedCartItems);
                 // Calculate total price
@@ -80,7 +80,7 @@ const OrderConfirmation = () => {
                 shippingAddress: selectedAddress,
                 orderItems,
                 paymentMethod: paymentType, // 'cod' or 'paypal'
-                 // Optionally store PayPal transaction details:
+                // Optionally store PayPal transaction details:
                 paypalOrderData,
             };
             const response = await axios.post('/api/v2/orders/place-order', payload);
@@ -148,11 +148,11 @@ const OrderConfirmation = () => {
                                             <div>
                                                 <p className='font-medium'>{item.name}</p>
                                                 <p className='text-sm text-gray-600'>Quantity: {item.quantity}</p>
-                                                <p className='text-sm text-gray-600'>Price: ${item.price.toFixed(2)}</p>
+                                                <p className='text-sm text-gray-600'>Price: ₹{item.price.toFixed(2)}</p>
                                             </div>
                                         </div>
                                         <div>
-                                            <p className='font-semibold'>${(item.price * item.quantity).toFixed(2)}</p>
+                                            <p className='font-semibold'>₹{(item.price * item.quantity).toFixed(2)}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -163,78 +163,81 @@ const OrderConfirmation = () => {
                     </div>
                     {/* Total Price */}
                     <div className='mb-6 flex justify-end'>
-                        <p className='text-xl font-semibold'>Total: ${totalPrice.toFixed(2)}</p>
+                        <p className='text-xl font-semibold'>Total: ₹{totalPrice.toFixed(2)}</p>
                     </div>
                     {/* Payment Method (Cash on Delivery or PayPal) */}
                     <div className='mb-6'>
                         <h3 className='text-xl font-medium mb-2'>Payment Method</h3>
                         <div className='p-4 border rounded-md space-x-4'>
-                             <label className='mr-4'>
-                                 <input
-                                     type='radio'
-                                     name='paymentMethod'
-                                     value='cod'
-                                     checked={paymentMethod === 'cod'}
-                                     onChange={() => setPaymentMethod('cod')}
-                                 />
-                                 <span className='ml-2'>Cash on Delivery</span>
-                             </label>
-                             <label>
-                                 <input
-                                     type='radio'
-                                     name='paymentMethod'
-                                     value='paypal'
-                                     checked={paymentMethod === 'paypal'}
-                                     onChange={() => setPaymentMethod('paypal')}
-                                 />
-                                 <span className='ml-2'>Pay Online (PayPal)</span>
-                             </label>
+                            <label className='mr-4'>
+                                <input
+                                    type='radio'
+                                    name='paymentMethod'
+                                    value='cod'
+                                    checked={paymentMethod === 'cod'}
+                                    onChange={() => setPaymentMethod('cod')}
+                                />
+                                <span className='ml-2'>Cash on Delivery</span>
+                            </label>
+                            <label>
+                                <input
+                                    type='radio'
+                                    name='paymentMethod'
+                                    value='paypal'
+                                    checked={paymentMethod === 'paypal'}
+                                    onChange={() => setPaymentMethod('paypal')}
+                                />
+                                <span className='ml-2'>Pay Online (PayPal)</span>
+                            </label>
                         </div>
                         {paymentMethod === 'paypal' && (
-                             <div className='mt-4' style={{ maxWidth: '500px' }}>
-                                 <PayPalScriptProvider
-                                     options={{
-                                         'client-id': import.meta.env.VITE_CLIENT_ID, 
-                                     }}
-                                 >
-                                     <PayPalButtons
-                                         style={{ layout: 'vertical' }}
-                                         createOrder={(data, actions) => {
-                                             return actions.order.create({
-                                                 purchase_units: [
-                                                     {
-                                                         amount: {
-                                                             value: totalPrice.toFixed(2),
-                                                         },
-                                                     },
-                                                 ],
-                                             });
-                                         }}
-                                         onApprove={async (data, actions) => {
-                                             // Captures funds from the transaction
-                                             const order = await actions.order.capture();
- 
-                                             // Call place order with PayPal data
-                                             handlePlaceOrder('paypal', order);
-                                         }}
-                                         onError={(err) => {
-                                         }}
-                                     />
-                                 </PayPalScriptProvider>
-                             </div>
-                         )}
+                            <div className='mt-4' style={{ maxWidth: '500px' }}>
+                                <PayPalScriptProvider
+                                    options={{
+                                        'client-id': import.meta.env.VITE_CLIENT_ID || "test",
+                                        currency: 'USD',
+                                    }}
+                                >
+                                    <PayPalButtons
+                                        style={{ layout: 'vertical' }}
+                                        createOrder={(data, actions) => {
+                                            const conversionRate = 83; // 1 USD = 83 INR
+                                            const convertedPrice = (totalPrice / conversionRate).toFixed(2);
+                                            return actions.order.create({
+                                                purchase_units: [
+                                                    {
+                                                        amount: {
+                                                            value: convertedPrice,
+                                                        },
+                                                    },
+                                                ],
+                                            });
+                                        }}
+                                        onApprove={async (data, actions) => {
+                                            // Captures funds from the transaction
+                                            const order = await actions.order.capture();
+
+                                            // Call place order with PayPal data
+                                            handlePlaceOrder('paypal', order);
+                                        }}
+                                        onError={(err) => {
+                                        }}
+                                    />
+                                </PayPalScriptProvider>
+                            </div>
+                        )}
                     </div>
                     {/* Place Order Button (for COD) */}
                     {paymentMethod === 'cod' && (
-                         <div className='flex justify-center'>
-                             <button
-                                 onClick={() => handlePlaceOrder('cod', null)}
-                                 className='bg-green-500 text-white px-6 py-3 rounded-md hover:bg-green-600 transition-colors'
-                             >
-                                 Place Order
-                             </button>
-                         </div>
-                     )}
+                        <div className='flex justify-center'>
+                            <button
+                                onClick={() => handlePlaceOrder('cod', null)}
+                                className='bg-green-500 text-white px-6 py-3 rounded-md hover:bg-green-600 transition-colors'
+                            >
+                                Place Order
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

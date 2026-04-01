@@ -47,7 +47,7 @@ MARKDOWN FORMATTING RULES:
 
 PRODUCT SEARCH RESULTS:
 When products are found, format each product like this:
-**[Product Name](product_url)** - $price
+**[Product Name](product_url)** - ₹price
 - Category: category_name
 - Description: product_description
 - Stock: X units available

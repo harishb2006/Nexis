@@ -45,7 +45,7 @@ Payment Methods Accepted:
 • Gift cards and store credit
 
 Special Purchase Considerations:
-• Bulk orders over $5,000 may require additional verification
+• Bulk orders over ₹5,000 may require additional verification
 • First-time large purchases might need payment confirmation
 • International orders require customs-compliant documentation
 • Pre-orders require valid payment method on file
@@ -57,7 +57,7 @@ Special Purchase Considerations:
 Welcome Offers:
 • First-time customers: 15% off first order (code: WELCOME15)
 • Email signup bonus: 10% off your first purchase
-• Referral bonus: $20 credit for referrer and referee
+• Referral bonus: ₹20 credit for referrer and referee
 
 Student Discounts (20% off):
 • Valid .edu email address or
@@ -134,7 +134,7 @@ Defective or Damaged Items:
 
 Return Process:
 1. Initiate return through your account or contact customer service
-2. Print prepaid return label (free for defects/errors, $7.99 for standard returns)
+2. Print prepaid return label (free for defects/errors, ₹650 for standard returns)
 3. Pack item securely in original or similar packaging
 4. Drop off at any authorized carrier location
 5. Refund processed within 5-7 business days after receipt
@@ -214,7 +214,7 @@ Subscription Services:
 • Exclusive subscriber-only products
 
 Business & Wholesale Accounts:
-• Minimum $1,000 annual purchase requirement
+• Minimum ₹1,000 annual purchase requirement
 • Net-30 payment terms available with credit approval
 • Dedicated account manager
 • Volume pricing and custom quotes

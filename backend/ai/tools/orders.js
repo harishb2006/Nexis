@@ -48,7 +48,7 @@ export const checkOrder = tool(
         success: true,
         orderId: order._id,
         status: order.orderStatus,
-        totalAmount: `$${order.totalAmount}`,
+        totalAmount: `₹${order.totalAmount}`,
         itemCount: order.orderItems.length,
         customerEmail: order.user?.email || "N/A",
         shippingCity: order.shippingAddress.city,
@@ -144,7 +144,7 @@ export const getMyOrders = tool(
         orders: orders.map((o) => ({
           orderId: o._id,
           status: o.orderStatus,
-          amount: `$${o.totalAmount}`,
+          amount: `₹${o.totalAmount}`,
           items: o.orderItems.length,
           orderDate: new Date(o.createdAt).toLocaleDateString(),
           delivered: o.deliveredAt
@@ -208,7 +208,7 @@ export const getAllOrders = tool(
         orders: orders.map((o) => ({
           orderId: o._id,
           status: o.orderStatus,
-          amount: `$${o.totalAmount}`,
+          amount: `₹${o.totalAmount}`,
           customer: o.user?.name || "N/A",
           date: new Date(o.createdAt).toLocaleDateString(),
         })),

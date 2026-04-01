@@ -91,7 +91,7 @@ export default function CartProduct({ _id, name, images, quantity, price }) {
 			<div className="flex-grow flex flex-col justify-between h-full py-1">
 				<div>
 					<h3 className="text-lg sm:text-xl font-bold text-gray-900 line-clamp-2 leading-tight mb-2 group-hover:text-indigo-600 transition-colors">{name}</h3>
-					<p className="text-indigo-600 font-extrabold text-xl">${Number(price).toFixed(2)}</p>
+					<p className="text-indigo-600 font-extrabold text-xl">₹{Number(price).toFixed(2)}</p>
 				</div>
 			</div>
 
@@ -118,7 +118,7 @@ export default function CartProduct({ _id, name, images, quantity, price }) {
 
 				<div className="text-right sm:text-center min-w-[100px]">
 					<p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Subtotal</p>
-					<p className="text-xl font-black text-gray-900">${(price * quantityVal).toFixed(2)}</p>
+					<p className="text-xl font-black text-gray-900">₹{(price * quantityVal).toFixed(2)}</p>
 				</div>
 			</div>
 		</div>

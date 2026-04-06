@@ -9,7 +9,8 @@ import { fileURLToPath } from 'url';
 import orders from './controller/orders.js';
 import user from "./controller/user.js";
 import ticket from "./routes/ticket.js";
-import { chatRouter, streamingRouter } from "./ai/routes/index.js";
+import chatRouter from "./ai/routes/chat.js";
+import streamingRouter from "./ai/routes/streaming.js";
 import dotenv from "dotenv";
 
 const __filename = fileURLToPath(import.meta.url);

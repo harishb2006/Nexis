@@ -3,7 +3,7 @@
  * Cohere embeddings via LangChain
  */
 import { CohereEmbeddings } from "@langchain/cohere";
-import config from "../config/index.js";
+import config from "../config/configMain.js";
 
 // Singleton instances for different input types
 let queryEmbeddings = null;

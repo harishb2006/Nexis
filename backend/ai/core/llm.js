@@ -3,7 +3,7 @@
  * Groq LLM integration with Ollama fallback
  */
 import { Ollama } from "ollama";
-import config from "../config/index.js";
+import config from "../config/configMain.js";
 
 // Singleton client instance
 let clientInstance = null;

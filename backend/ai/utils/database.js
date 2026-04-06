@@ -3,7 +3,7 @@
  * Shared database connection helper
  */
 import mongoose from "mongoose";
-import config from "../config/index.js";
+import config from "../config/configMain.js";
 
 /**
  * Ensure MongoDB connection is established

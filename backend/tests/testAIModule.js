@@ -14,7 +14,7 @@ async function testModules() {
   try {
     // Test 1: Config
     console.log("\n1️⃣ Testing Config...");
-    const { config, validateConfig } = await import("../ai/index.js");
+    const { config, validateConfig } = await import("../ai/config/configMain.js");
     console.log("   ✅ Config loaded");
     console.log(`   - LLM Model: ${config.llm.model}`);
     console.log(`   - Embeddings Model: ${config.embeddings.model}`);
@@ -22,37 +22,40 @@ async function testModules() {
 
     // Test 2: Core modules
     console.log("\n2️⃣ Testing Core Modules...");
-    const { getClient, convertTools } = await import("../ai/core/index.js");
+    const { getClient } = await import("../ai/core/llm.js");
+    const { convertTools } = await import("../ai/core/toolConverter.js");
     console.log("   ✅ LLM client available");
     console.log("   ✅ Tool converter available");
 
     // Test 3: Tools
     console.log("\n3️⃣ Testing Tools...");
-    const { allTools, getToolsForLLM } = await import("../ai/tools/index.js");
+    const { allTools, getToolsForLLM } = await import("../ai/tools/registry.js");
     console.log(`   ✅ ${allTools.length} tools loaded`);
     allTools.forEach((t) => console.log(`      - ${t.name}`));
 
     // Test 4: Agent
     console.log("\n4️⃣ Testing Agent...");
-    const { createSupportAgent } = await import("../ai/agents/index.js");
+    const { createSupportAgent } = await import("../ai/agents/supportAgent.js");
     const agent = createSupportAgent();
     console.log("   ✅ Support agent created");
 
     // Test 5: Memory
     console.log("\n5️⃣ Testing Memory Service...");
-    const { MemoryService, generateThreadId } = await import("../ai/memory/index.js");
+    const { MemoryService, generateThreadId } = await import("../ai/memory/service.js");
     console.log(`   ✅ Memory service available`);
     console.log(`   - Sample thread ID: ${generateThreadId()}`);
 
     // Test 6: RAG (skip actual retrieval, just check import)
     console.log("\n6️⃣ Testing RAG...");
-    const { retrieveRelevantChunks, ingestFromUploads } = await import("../ai/rag/index.js");
+    const { retrieveRelevantChunks } = await import("../ai/rag/retriever.js");
+    const { ingestFromUploads } = await import("../ai/rag/ingestion.js");
     console.log("   ✅ RAG retriever available");
     console.log("   ✅ Document ingestion available");
 
     // Test 7: Routes
     console.log("\n7️⃣ Testing Routes...");
-    const { chatRouter, streamingRouter } = await import("../ai/routes/index.js");
+    const chatRouter = (await import("../ai/routes/chat.js")).default;
+    const streamingRouter = (await import("../ai/routes/streaming.js")).default;
     console.log("   ✅ Chat router loaded");
     console.log("   ✅ Streaming router loaded");
 

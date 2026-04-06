@@ -6,10 +6,10 @@ import {
   formatChunksAsContext,
   formatChunksAsSources,
 } from "../rag/retriever.js";
-import { getToolsForLLM, executeTool, getToolDisplayName } from "../tools/index.js";
+import { getToolsForLLM, executeTool, getToolDisplayName } from "../tools/registry.js";
 import { detectSentiment } from "../utils/sentiment.js";
 import { supportAgentPrompt, toolResultPrompt } from "../config/prompts.js";
-import config from "../config/index.js";
+import config from "../config/configMain.js";
 import { EVENT_TYPES } from "../config/constants.js";
 
 /**
@@ -19,12 +19,12 @@ const AgentState = Annotation.Root({
   // Input
   userQuestion: Annotation({ reducer: (x, y) => y ?? x, default: () => "" }),
   messages: Annotation({ reducer: (x, y) => y ?? x, default: () => [] }),
-  
+
   // Context
   userId: Annotation({ reducer: (x, y) => y ?? x, default: () => null }),
   email: Annotation({ reducer: (x, y) => y ?? x, default: () => null }),
   threadId: Annotation({ reducer: (x, y) => y ?? x, default: () => null }),
-  
+
   // Processing
   context: Annotation({ reducer: (x, y) => y ?? x, default: () => "" }),
   sources: Annotation({ reducer: (x, y) => y ?? x, default: () => [] }),
@@ -34,11 +34,11 @@ const AgentState = Annotation.Root({
   }),
   toolCalls: Annotation({ reducer: (x, y) => y ?? x, default: () => [] }),
   toolResults: Annotation({ reducer: (x, y) => y ?? x, default: () => [] }),
-  
+
   // Output
   finalAnswer: Annotation({ reducer: (x, y) => y ?? x, default: () => "" }),
   eventStream: Annotation({ reducer: (x, y) => y ?? x, default: () => [] }),
-  
+
   // Control
   shouldContinue: Annotation({ reducer: (x, y) => y ?? x, default: () => true }),
   iterationCount: Annotation({ reducer: (x, y) => y ?? x, default: () => 0 }),

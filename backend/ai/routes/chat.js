@@ -6,7 +6,7 @@ import express from "express";
 import { execute } from "../agents/supportAgent.js";
 import { ingestFromUploads } from "../rag/ingestion.js";
 import { DEFAULT_SUGGESTIONS } from "../config/constants.js";
-import { validateConfig } from "../config/index.js";
+import { validateConfig } from "../config/configMain.js";
 import catchAsyncErrors from "../../middleware/catchAsyncErrors.js";
 import Feedback from "../../model/feedback.js";
 
@@ -307,7 +307,7 @@ router.get(
 // Helper function to categorize feedback
 function categorizeFeedback(text) {
   const lowerText = (text || '').toLowerCase();
-  
+
   if (lowerText.match(/ship|deliver|track|freight|postal/)) return 'shipping';
   if (lowerText.match(/return|refund|exchange|money back/)) return 'returns';
   if (lowerText.match(/order|purchase|buy|cart|checkout/)) return 'orders';
@@ -316,7 +316,7 @@ function categorizeFeedback(text) {
   if (lowerText.match(/account|login|password|profile/)) return 'account';
   if (lowerText.match(/price|cost|discount|coupon|promo/)) return 'pricing';
   if (lowerText.match(/support|help|contact|service/)) return 'support';
-  
+
   return 'general';
 }
 

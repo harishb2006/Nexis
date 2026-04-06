@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 import { fileURLToPath } from "url";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { embedDocuments } from "../core/embeddings.js";
-import config from "../config/index.js";
+import config from "../config/configMain.js";
 import { SUPPORTED_DOC_EXTENSIONS } from "../config/constants.js";
 
 const __filename = fileURLToPath(import.meta.url);

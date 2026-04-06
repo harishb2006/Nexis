@@ -4,7 +4,7 @@
  */
 import mongoose from "mongoose";
 import { embedQuery, cosineSimilarity } from "../core/embeddings.js";
-import config from "../config/index.js";
+import config from "../config/configMain.js";
 import { getCollection } from "../core/pineconeStore.js";
 
 export async function retrieveRelevantChunks(query, k = 3) {

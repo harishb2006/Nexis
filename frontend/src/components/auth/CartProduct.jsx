@@ -44,31 +44,6 @@ export default function CartProduct({ _id, name, images, quantity, price }) {
 		}
 	};
 
-	// const updateQuantityVal = (quantity) => {
-	// 	fetch('http://localhost:8000/api/v2/product/cartproduct/quantity', {
-	// 		method: 'PUT',
-	// 		headers: {
-	// 			'Content-Type': 'application/json',
-	// 		},
-	// 		body: JSON.stringify({
-	// 			email: 'sibi123@gmail.com',
-	// 			productId: _id,
-	// 			quantity,
-	// 		}),
-	// 	})
-	// 		.then((res) => {
-	// 			if (!res.ok) {
-	// 				throw new Error(`HTTP error! status: ${res.status}`);
-	// 			}
-	// 			return res.json();
-	// 		})
-	// 		.then((data) => {
-	// 			console.log('quantityVal updated:', data);
-	// 		})
-	// 		.catch((err) => {
-	// 			console.error('Error updating quantityVal:', err);
-	// 		});
-	// };
 
 	const currentImage = images && images.length > 0 ? images[currentIndex] : "";
 

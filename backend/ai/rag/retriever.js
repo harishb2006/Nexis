@@ -4,10 +4,8 @@
  */
 import mongoose from "mongoose";
 import { embedQuery, cosineSimilarity } from "../core/embeddings.js";
-import KnowledgeBase from "../models/knowledgeBase.js";
 import config from "../config/index.js";
-
-import { getCollection } from "../core/localVectorStore.js";
+import { getCollection } from "../core/pineconeStore.js";
 
 export async function retrieveRelevantChunks(query, k = 3) {
   if (!config.embeddings.apiKey) {

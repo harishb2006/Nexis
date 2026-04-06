@@ -136,6 +136,29 @@ async function decisionNode(state) {
     const completion = await completeWithTools(messages, tools);
     const assistantMessage = completion.choices[0].message;
 
+    // Patch for Mistral fallback emitting raw JSON array instead of setting tool_calls natively
+    if (!assistantMessage.tool_calls && assistantMessage.content && assistantMessage.content.trim().startsWith("[")) {
+      try {
+        const parsed = JSON.parse(assistantMessage.content);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].name) {
+          assistantMessage.tool_calls = parsed.map((t, idx) => ({
+            id: `call_${Date.now()}_${idx}`,
+            type: "function",
+            function: {
+              name: t.name,
+              arguments: JSON.stringify(t.arguments || {})
+            }
+          }));
+          assistantMessage.content = ""; // clear raw JSON
+        }
+      } catch (e) { }
+    }
+
+    const updatedMessages = [
+      ...state.messages,
+      { role: "user", content: state.userQuestion }
+    ];
+
     // Check if tools are needed
     if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
       events.push({
@@ -144,21 +167,21 @@ async function decisionNode(state) {
         status: "executing",
       });
 
+      updatedMessages.push(assistantMessage);
+
       return {
         toolCalls: assistantMessage.tool_calls,
+        messages: updatedMessages,
         eventStream: events,
         shouldContinue: true,
       };
     }
 
     // No tools needed - direct response
+    updatedMessages.push({ role: "assistant", content: assistantMessage.content || "" });
     return {
-      finalAnswer: assistantMessage.content,
-      messages: [
-        ...state.messages,
-        { role: "user", content: state.userQuestion },
-        { role: "assistant", content: assistantMessage.content },
-      ],
+      finalAnswer: assistantMessage.content || "",
+      messages: updatedMessages,
       eventStream: events,
       shouldContinue: false,
     };
@@ -212,7 +235,7 @@ async function toolNode(state) {
         status: "completed",
       });
 
-      toolResults.push({ tool: toolName, args: toolArgs, result: parsedResult });
+      toolResults.push({ tool: toolName, id: toolCall.id, args: toolArgs, result: parsedResult });
     } catch (error) {
 
       events.push({
@@ -224,6 +247,7 @@ async function toolNode(state) {
 
       toolResults.push({
         tool: toolName,
+        id: toolCall.id,
         args: toolArgs,
         result: { success: false, error: error.message },
       });
@@ -251,23 +275,31 @@ async function responseNode(state) {
 
   try {
     // Build messages with tool results
-    const messages = (state.messages || [])
-      .filter((msg) => msg && msg.role && ["user", "assistant", "system"].includes(msg.role))
-      .map((msg) => ({
-        role: msg.role,
-        content: typeof msg.content === "string" && msg.content ? msg.content : "",
-      }));
-
-    // Add tool results as context
-    if (state.toolResults && state.toolResults.length > 0) {
-      const toolContext = state.toolResults
-        .map((tr) => `Tool ${tr.tool} returned: ${JSON.stringify(tr.result)}`)
-        .join("\n");
-
-      messages.push({
-        role: "user",
-        content: `Based on the tool results:\n${toolContext}\n\n${toolResultPrompt}`,
+    const validRoles = ["user", "assistant", "system", "tool"];
+    const historyMsgs = (state.messages || [])
+      .filter((msg) => msg && msg.role && validRoles.includes(msg.role))
+      .map((msg) => {
+        const cleanMsg = { role: msg.role, content: msg.content || "" };
+        if (msg.tool_calls) cleanMsg.tool_calls = msg.tool_calls;
+        if (msg.tool_call_id) cleanMsg.tool_call_id = msg.tool_call_id;
+        if (msg.name) cleanMsg.name = msg.name;
+        return cleanMsg;
       });
+
+    const messages = [
+      { role: "system", content: supportAgentPrompt(state.context, state.threadId) },
+      ...historyMsgs
+    ];
+
+    // Add tool results as context using proper tool roles
+    if (state.toolResults && state.toolResults.length > 0) {
+      const toolMessages = state.toolResults.map(tr => ({
+        role: "tool",
+        tool_call_id: tr.id,
+        name: tr.tool,
+        content: JSON.stringify(tr.result)
+      }));
+      messages.push(...toolMessages);
     }
 
     const completion = await complete(messages);
@@ -279,13 +311,22 @@ async function responseNode(state) {
       status: "complete",
     });
 
+    // Save state completely
+    const finalMessages = [...state.messages];
+    if (state.toolResults && state.toolResults.length > 0) {
+      const toolMessages = state.toolResults.map(tr => ({
+        role: "tool",
+        tool_call_id: tr.id,
+        name: tr.tool,
+        content: JSON.stringify(tr.result)
+      }));
+      finalMessages.push(...toolMessages);
+    }
+    finalMessages.push({ role: "assistant", content: assistantMessage.content || "" });
+
     return {
-      finalAnswer: assistantMessage.content,
-      messages: [
-        ...state.messages,
-        { role: "user", content: state.userQuestion },
-        { role: "assistant", content: assistantMessage.content },
-      ],
+      finalAnswer: assistantMessage.content || "",
+      messages: finalMessages,
       eventStream: events,
       shouldContinue: false,
     };

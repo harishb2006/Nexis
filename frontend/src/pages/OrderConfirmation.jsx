@@ -63,8 +63,6 @@ const OrderConfirmation = () => {
     // 3) Single function to place order, can accept PayPal data if payment was online
     const handlePlaceOrder = async (paymentType = 'cod', paypalOrderData = null) => {
         try {
-            // setLoading(true);
-            // const response = await axios.post('http://localhost:8000/api/v2/orders/place-order', {
             // Map cartItems to match the backend expected format
             const orderItems = cartItems.map(item => ({
                 product: item.product,
@@ -73,7 +71,6 @@ const OrderConfirmation = () => {
                 price: item.price,
                 image: item.images && item.images.length > 0 ? item.images[0] : '/default-avatar.png'
             }));
-            // console.log(orderItems);
             // Construct payload with paymentMethod and optional PayPal data
             const payload = {
                 email,

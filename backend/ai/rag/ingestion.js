@@ -8,7 +8,6 @@ import mongoose from "mongoose";
 import { fileURLToPath } from "url";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { embedDocuments } from "../core/embeddings.js";
-import KnowledgeBase from "../models/knowledgeBase.js";
 import config from "../config/index.js";
 import { SUPPORTED_DOC_EXTENSIONS } from "../config/constants.js";
 
@@ -74,7 +73,7 @@ function scanUploadsFolder(uploadsPath) {
   return files;
 }
 
-import { getCollection } from "../core/localVectorStore.js";
+import { getCollection } from "../core/pineconeStore.js";
 
 /**
  * Ingest all documents from uploads folder
@@ -108,10 +107,8 @@ export async function ingestFromUploads() {
       // Split into chunks
       const chunks = await textSplitter.splitDocuments(docs);
 
-      // Delete existing chunks from this source in ChromaDB
-      await collection.delete({
-        where: { source: filePath }
-      });
+      // Note: Delete logic by metadata is skipped with Pinecone. 
+      // Fixed IDs per chunk will automatically overwrite older records cleanly.
 
       // Generate embeddings in batches
       const batchSize = 96;
@@ -129,7 +126,7 @@ export async function ingestFromUploads() {
         const documents = [];
 
         batch.forEach((chunk, idx) => {
-          ids.push(`${path.basename(filePath)}_${i + idx}_${Date.now()}`);
+          ids.push(`${path.basename(filePath)}_${i + idx}`);
           embeddings.push(batchEmbeddings[idx]);
           metadatas.push({
             source: filePath,
@@ -167,20 +164,6 @@ export async function ingestFromUploads() {
   };
 }
 
-/**
- * Clear all knowledge base entries
- */
-export async function clearKnowledgeBase() {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(config.database.url);
-  }
-
-  const result = await KnowledgeBase.deleteMany({});
-
-  return result.deletedCount;
-}
-
 export default {
   ingestFromUploads,
-  clearKnowledgeBase,
 };

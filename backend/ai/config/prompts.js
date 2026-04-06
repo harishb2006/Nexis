@@ -23,21 +23,16 @@ GENERAL RULES:
 6. For frustrated customers, IMMEDIATELY escalate using the tool.
 7. NEVER invent or guess an orderId. If you need an orderId, ask the customer or use get_my_orders.
 8. If you do NOT need to call a tool, just answer the user normally based on the context.
-9. CRITICAL: If you provide a link for the user to view their personal orders, ALWAYS strictly use http://localhost:5173/myorders and NEVER use /orders.
-
-HOW TO USE TOOLS (CRITICAL STRICT SYNTAX):
-If you need to use a tool (like search_products), you MUST output exactly this format and nothing else:
-[TOOL_CALLS] [{"name": "tool_name", "arguments": {"arg1": "value"}}]
-
-Example for searching products:
-[TOOL_CALLS] [{"name": "search_products", "arguments": {"query": "laptop"}}]
-${threadId ? `8. When escalating, include threadId: ${threadId}` : ""}`;
+21. CRITICAL: If you provide a link for the user to view their personal orders, ALWAYS strictly use http://localhost:5173/myorders and NEVER use /orders.
+${threadId ? `10. When escalating, include threadId: ${threadId}` : ""}`;
 }
 
 /**
  * Tool result interpretation prompt
  */
 export const toolResultPrompt = `IMPORTANT: Format your response using Markdown and include all key details from tool results:
+
+CRITICAL SYSTEM DIRECTIVE: You are in the final response phase. You MUST respond directly to the user based on the tool context provided. DO NOT attempt to call or output any more tools.
 
 MARKDOWN FORMATTING RULES:
 - Use **bold** for product names and important terms

@@ -42,7 +42,7 @@ function Myproduct({ _id, name, images, description, price }) {
       <div className="relative h-56 w-full bg-gradient-to-b from-gray-50/30 to-gray-100/30 flex items-center justify-center p-4 border-b border-gray-100/50 overflow-hidden">
         {currentImage ? (
           <img
-            src={`${backendURL}${currentImage}`}
+            src={currentImage.startsWith('http') ? currentImage : `${backendURL}${currentImage}`}
             alt={name}
             className="w-full h-full object-contain filter drop-shadow-sm transition-all duration-700 ease-in-out group-hover:scale-105"
           />

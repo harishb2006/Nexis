@@ -41,12 +41,13 @@ router.post(
       password: hashedPassword,
       role: role || "user",
       avatar: {
-        public_id: req.file?.filename || "",
-        url: fileUrl,
+        public_id: req.file?.filename || "default_avatar",
+        url: fileUrl || "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
       },
     });
 
     res.status(201).json({ success: true, user });
+    console.log("User created successfully:", user);
   })
 );
 

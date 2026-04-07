@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from '../axiosConfig';
 import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { AiOutlinePlusCircle } from "react-icons/ai";
 import NavBar from "../components/auth/nav";
 
@@ -8,6 +9,7 @@ const CreateProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEdit = Boolean(id);
+  const loggedInEmail = useSelector((state) => state.user.email);
   const [images, setImages] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
   const [name, setName] = useState("");
@@ -24,6 +26,13 @@ const CreateProduct = () => {
       { title: "Books" },
       { title: "Home Appliances" },
   ];
+
+  // Auto-populate email from Redux when component mounts
+  useEffect(() => {
+      if (loggedInEmail && !isEdit) {
+          setEmail(loggedInEmail);
+      }
+  }, [loggedInEmail, isEdit]);
 
   useEffect(() => {
       if (isEdit) {
@@ -125,9 +134,10 @@ const CreateProduct = () => {
                         <input
                             type="email"
                             value={email}
-                            className="w-full p-2 border rounded"
+                            className="w-full p-2 border rounded bg-gray-50"
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="Enter your email"
+                            readOnly={!isEdit && loggedInEmail}
                             required
                         />
                     </div>

@@ -132,7 +132,7 @@ export default function ProductDetails() {
                               }`}
                           >
                             <img
-                              src={`${backendURL}${img}`}
+                              src={img.startsWith('http') ? img : `${backendURL}${img}`}
                               alt={`${product.name} ${idx + 1}`}
                               className="w-full h-full object-cover"
                             />
@@ -149,7 +149,7 @@ export default function ProductDetails() {
                       <div className="relative w-96 h-96 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-gray-100">
                         {product.images && product.images.length > 0 ? (
                           <img
-                            src={`${backendURL}${product.images[selectedImage]}`}
+                            src={product.images[selectedImage].startsWith('http') ? product.images[selectedImage] : `${backendURL}${product.images[selectedImage]}`}
                             alt={product.name}
                             className="w-80 h-80 object-contain"
                           />

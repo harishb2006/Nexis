@@ -53,7 +53,7 @@ export default function CartProduct({ _id, name, images, quantity, price }) {
 			<div className="relative w-full sm:w-32 h-32 bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden shrink-0 group-hover:bg-gray-100 transition-colors">
 				{currentImage ? (
 					<img
-						src={`${backendURL}${currentImage}`}
+						src={currentImage.startsWith('http') ? currentImage : `${backendURL}${currentImage}`}
 						alt={name}
 						className="w-full h-full object-contain filter drop-shadow-sm transition-transform duration-500 group-hover:scale-110 p-2"
 					/>

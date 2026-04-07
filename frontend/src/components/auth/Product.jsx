@@ -87,7 +87,7 @@ function Product({ _id, name, images, description, price, createdAt, userWishlis
         {currentImage ? (
           <>
             <img
-              src={`${backendURL}${currentImage}`}
+              src={currentImage.startsWith('http') ? currentImage : `${backendURL}${currentImage}`}
               alt={name}
               onError={(e) => {
                 e.currentTarget.style.display = 'none';

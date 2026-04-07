@@ -251,12 +251,17 @@ async function responseNode(state) {
 
   try {
     // Build messages with tool results
-    const messages = (state.messages || [])
-      .filter((msg) => msg && msg.role && ["user", "assistant", "system"].includes(msg.role))
-      .map((msg) => ({
-        role: msg.role,
-        content: typeof msg.content === "string" && msg.content ? msg.content : "",
-      }));
+    const systemPrompt = supportAgentPrompt(state.context, state.threadId);
+    
+    let messages = [
+      { role: "system", content: systemPrompt },
+      ...(state.messages || [])
+        .filter((msg) => msg && msg.role && ["user", "assistant", "system"].includes(msg.role))
+        .map((msg) => ({
+          role: msg.role,
+          content: typeof msg.content === "string" && msg.content ? msg.content : "",
+        }))
+    ];
 
     // Add tool results as context
     if (state.toolResults && state.toolResults.length > 0) {
@@ -266,7 +271,12 @@ async function responseNode(state) {
 
       messages.push({
         role: "user",
-        content: `Based on the tool results:\n${toolContext}\n\n${toolResultPrompt}`,
+        content: `My request was: "${state.userQuestion}".\n\nBased on your tool execution, we got these results:\n${toolContext}\n\n${toolResultPrompt}`,
+      });
+    } else {
+      messages.push({
+        role: "user",
+        content: state.userQuestion
       });
     }
 

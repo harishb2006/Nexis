@@ -128,10 +128,14 @@ export async function complete(messages, options = {}) {
   try {
     return await completeWithGroq(messages, options);
   } catch (error) {
-    console.error("⚠️ Groq API failed, falling back to local Ollama (Mistral):", error.message);
-    const fallbackOptions = { ...options };
-    delete fallbackOptions.model;
-    return await completeWithOllama(messages, fallbackOptions);
+    console.error("⚠️ Groq API failed:", error.message);
+    if (error.message.includes("429")) {
+      console.log("Retrying Groq API after 2 seconds due to rate limit...");
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return await completeWithGroq(messages, options);
+    }
+    // We let it throw instead of falling back to Ollama Mistral, as requested.
+    throw error;
   }
 }
 

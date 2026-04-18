@@ -8,7 +8,7 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userWishlist, setUserWishlist] = useState([]);
-  const email = useSelector((state) => state.user.email);
+  const email = useSelector((state: any) => state.user.email);
 
   useEffect(() => {
     axios.get("/api/v2/product/get-products")

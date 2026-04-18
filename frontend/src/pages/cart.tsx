@@ -11,7 +11,7 @@ const Cart = () => {
   const navigate = useNavigate();
 
   // Get the email from Redux state
-  const email = useSelector((state) => state.user.email);
+  const email = useSelector((state: any) => state.user.email);
   useEffect(() => {
     if (!email) return;
 

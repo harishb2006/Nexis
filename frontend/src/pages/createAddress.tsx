@@ -7,7 +7,7 @@ import { useSelector } from "react-redux"; // Import useSelector
 const CreateAddress = () => {
     const navigate = useNavigate();
     // Get email from Redux state
-    const email = useSelector((state) => state.user.email);
+    const email = useSelector((state: any) => state.user.email);
     const [country, setCountry] = useState("");
     const [city, setCity] = useState("");
     const [address1, setAddress1] = useState("");

@@ -8,7 +8,7 @@ import { Heart } from "lucide-react";
 export default function Wishlist() {
     const [wishlistProducts, setWishlistProducts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const email = useSelector((state) => state.user.email);
+    const email = useSelector((state: any) => state.user.email);
 
     useEffect(() => {
         if (!email) {

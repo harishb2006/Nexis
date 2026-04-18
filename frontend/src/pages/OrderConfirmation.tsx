@@ -35,7 +35,7 @@ const OrderConfirmation = () => {
                     params: { email },
                 });
                 const cartData = cartResponse.data;
-                const backendURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                const backendURL = (import.meta as any).env.VITE_API_URL || 'http://localhost:8000';
                 // Map cart items to include full image URLs
                 const processedCartItems = cartData.cart.map((item) => ({
                     product: item.productId._id,
@@ -191,7 +191,7 @@ const OrderConfirmation = () => {
                             <div className='mt-4' style={{ maxWidth: '500px' }}>
                                 <PayPalScriptProvider
                                     options={{
-                                        'client-id': import.meta.env.VITE_CLIENT_ID || "test",
+                                        'client-id': (import.meta as any).env.VITE_CLIENT_ID || "test",
                                         currency: 'USD',
                                     }}
                                 >

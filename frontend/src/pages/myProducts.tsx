@@ -9,7 +9,7 @@ export default function MyProducts() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const email = useSelector((state) => state.user.email);
+    const email = useSelector((state: any) => state.user.email);
 
     useEffect(() => {
         if (!email) return;

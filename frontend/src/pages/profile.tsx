@@ -8,7 +8,7 @@ import axios from "../axiosConfig";
 axios.defaults.withCredentials = true;
 
 export default function Profile() {
-  const email = useSelector((state) => state.user.email);
+  const email = useSelector((state: any) => state.user.email);
 
   const [personalDetails, setPersonalDetails] = useState({
     name: "",
@@ -77,7 +77,7 @@ export default function Profile() {
               <div className="relative flex flex-col items-center mb-8 mt-4">
                 <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-white mb-4">
                   <img
-                    src={personalDetails.avatarUrl ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/${personalDetails.avatarUrl}` : `https://cdn.vectorstock.com/i/500p/17/61/male-avatar-profile-picture-vector-10211761.jpg`}
+                    src={personalDetails.avatarUrl ? `${(import.meta as any).env.VITE_API_URL || 'http://localhost:8000'}/${personalDetails.avatarUrl}` : `https://cdn.vectorstock.com/i/500p/17/61/male-avatar-profile-picture-vector-10211761.jpg`}
                     alt="profile"
                     className="w-full h-full object-cover"
                     onError={(e) => {

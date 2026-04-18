@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const user = useSelector((state) => state.user);
+  const user = useSelector((state: any) => state.user);
   const [tickets, setTickets] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -592,7 +592,7 @@ export default function AdminDashboard() {
                       onChange={(e) => setResolution(e.target.value)}
                       placeholder="Describe how you resolved this ticket..."
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                      rows="3"
+                      rows={3}
                     />
                   </div>
                 )}

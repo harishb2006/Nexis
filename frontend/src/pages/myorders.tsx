@@ -7,7 +7,7 @@ const MyOrdersPage = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const email = useSelector((state) => state.user.email);
+    const email = useSelector((state: any) => state.user.email);
 
     const fetchOrders = async () => {
         if (!email) return;

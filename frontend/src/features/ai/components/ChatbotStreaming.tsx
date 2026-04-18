@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown';
 
 export default function ChatbotStreaming() {
   const [isOpen, setIsOpen] = useState(false);
-  const userEmail = useSelector((state) => state.user.email); // Get email from Redux
+  const userEmail = useSelector((state: any) => state.user.email); // Get email from Redux
   const [messages, setMessages] = useState([
     {
       type: 'bot',

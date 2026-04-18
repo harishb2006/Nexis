@@ -1,16 +1,27 @@
-// src/components/NavBar.jsx
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { ShoppingCart, User, LogOut, Menu, X, Shield, Package, Store, Heart } from 'lucide-react';
 import { logout } from '../../store/userActions';
 
-const NavBar = () => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
+// 1. Define the shape of your Redux state
+interface RootState {
+    user: {
+        email: string | null;
+        role: string | null;
+    };
+}
+
+const NavBar: React.FC = () => {
+    // 2. Explicitly type your boolean state
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [scrolled, setScrolled] = useState<boolean>(false);
+    
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const user = useSelector((state) => state.user);
+    
+    // 3. Apply the RootState interface to useSelector
+    const user = useSelector((state: RootState) => state.user);
     const email = user.email;
     const isAdmin = user.role === 'admin';
 
@@ -27,16 +38,17 @@ const NavBar = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const toggleMenu = () => {
+    const toggleMenu = (): void => {
         setIsOpen(!isOpen);
     };
 
-    const handleLogout = () => {
+    const handleLogout = (): void => {
         dispatch(logout());
         navigate('/login');
     };
 
-    const navLinkClasses = ({ isActive }) =>
+    // 4. Strongly type the NavLink render prop parameters
+    const navLinkClasses = ({ isActive }: { isActive: boolean }): string =>
         `relative px-3 py-2 text-sm font-medium transition-colors duration-300 ${isActive ? 'text-indigo-600' : 'text-gray-600 hover:text-indigo-600'
         } before:absolute before:inset-x-0 before:bottom-0 before:h-0.5 before:origin-left before:scale-x-0 before:bg-indigo-600 before:transition-transform before:duration-300 hover:before:scale-x-100 ${isActive ? 'before:scale-x-100' : ''
         }`;
@@ -83,8 +95,13 @@ const NavBar = () => {
                                     }`
                                 }
                             >
-                                <Shield size={16} className={({ isActive }) => isActive ? 'text-purple-600' : ''} />
-                                Admin Panel
+                                {/* 5. Fixed bug here: Wrapped in a function to access isActive for the icon */}
+                                {({ isActive }) => (
+                                    <>
+                                        <Shield size={16} className={isActive ? 'text-purple-600' : ''} />
+                                        Admin Panel
+                                    </>
+                                )}
                             </NavLink>
                         )}
                     </div>

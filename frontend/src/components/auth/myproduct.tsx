@@ -1,9 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import axios from 'axios';
-import axios from '../../axiosConfig'
-function Myproduct({ _id, name, images, description, price }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+import axios from '../../axiosConfig';
+
+// 1. Define the props interface for the component
+interface MyproductProps {
+  _id: string;
+  name: string;
+  images?: string[];
+  description: string;
+  price: number | string;
+}
+
+// 2. Apply the interface to the component
+const Myproduct: React.FC<MyproductProps> = ({ 
+  _id, 
+  name, 
+  images = [], 
+  description, 
+  price 
+}) => {
+  // 3. Explicitly type the state
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,13 +32,15 @@ function Myproduct({ _id, name, images, description, price }) {
   }, [images]);
 
   const currentImage = images && images.length > 0 ? images[currentIndex] : null;
-  const backendURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  
+  // Handled Vite's import.meta.env
+  const backendURL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
 
-  const handleEdit = () => {
+  const handleEdit = (): void => {
     navigate(`/create-product/${_id}`);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     try {
       const response = await axios.delete(
         `/api/v2/product/delete-product/${_id}`
@@ -31,7 +50,7 @@ function Myproduct({ _id, name, images, description, price }) {
         // Reload the page or fetch products again
         window.location.reload();
       }
-    } catch (err) {
+    } catch (err: any) { // 4. Added 'any' to handle the unknown error type natively thrown by try/catch
       alert("Failed to delete product.");
     }
   };
@@ -82,6 +101,6 @@ function Myproduct({ _id, name, images, description, price }) {
       </div>
     </div>
   );
-}
+};
 
 export default Myproduct;

@@ -1,14 +1,38 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, MouseEvent, SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart, ShoppingCart, ArrowRight } from "lucide-react";
 import { useSelector } from "react-redux";
 import axios from "../../axiosConfig";
 
-function Product({ _id, name, images, description, price, createdAt, userWishlist = [], onToggleWishlist }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
+// 1. Define the props interface for the component
+interface ProductProps {
+  _id: string;
+  name: string;
+  images?: string[];
+  description: string;
+  price: number | string;
+  createdAt: string | Date;
+  userWishlist?: string[];
+  onToggleWishlist?: () => void;
+}
+
+// 2. Apply the interface to the component
+const Product: React.FC<ProductProps> = ({ 
+  _id, 
+  name, 
+  images = [], 
+  description, 
+  price, 
+  createdAt, 
+  userWishlist = [], 
+  onToggleWishlist 
+}) => {
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
   const navigate = useNavigate();
-  const user = useSelector((state) => state.user);
+  
+  // 3. Replaced 'any' with a generic structural type for the Redux state
+  const user = useSelector((state: { user?: { email?: string } }) => state.user);
   const email = user?.email;
 
   useEffect(() => {
@@ -19,7 +43,8 @@ function Product({ _id, name, images, description, price, createdAt, userWishlis
     return () => clearInterval(interval);
   }, [images]);
 
-  const handleToggleWishlist = async (e) => {
+  // 4. Type the MouseEvent specifically for buttons
+  const handleToggleWishlist = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     if (!email) {
       alert("Please login to add to wishlist");
@@ -42,7 +67,8 @@ function Product({ _id, name, images, description, price, createdAt, userWishlis
     }
   };
 
-  const handleAddToCart = async (e) => {
+  // 5. Type the MouseEvent specifically for buttons
+  const handleAddToCart = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     if (!email) {
       alert("Please login to add to cart");
@@ -62,18 +88,30 @@ function Product({ _id, name, images, description, price, createdAt, userWishlis
     }
   };
 
-  const isNewProduct = () => {
+  const isNewProduct = (): boolean => {
     const now = new Date();
     const productDate = new Date(createdAt);
 
-    const diffTime = now - productDate;
+    const diffTime: number = now.getTime() - productDate.getTime();
     const diffDays = diffTime / (1000 * 60 * 60 * 24);
 
-    return diffDays <= 3; // change to 3 or 1 if needed
+    return diffDays <= 3;
   };
 
   const currentImage = images && images.length > 0 ? images[currentIndex] : null;
-  const backendURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  
+  // Kept the 'any' cast here as it is standard practice to bypass Vite's meta env strictness 
+  // if Vite environment types are not explicitly configured in your tsconfig.json
+  const backendURL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+
+  // 6. Type the image error event
+  const handleImageError = (e: SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.style.display = 'none';
+    const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
+    if (nextSibling) {
+        nextSibling.style.display = 'flex';
+    }
+  };
 
   return (
     <div
@@ -89,10 +127,7 @@ function Product({ _id, name, images, description, price, createdAt, userWishlis
             <img
               src={currentImage.startsWith('http') ? currentImage : `${backendURL}${currentImage}`}
               alt={name}
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.nextElementSibling.style.display = 'flex';
-              }}
+              onError={handleImageError}
               className="w-full h-full object-contain filter drop-shadow-sm transition-all duration-700 ease-in-out group-hover:scale-110 group-hover:-translate-y-2 group-hover:drop-shadow-xl"
             />
             <div className="hidden text-gray-400 font-medium absolute inset-0 items-center justify-center z-0">No Image</div>
@@ -149,6 +184,6 @@ function Product({ _id, name, images, description, price, createdAt, userWishlis
       </div>
     </div >
   );
-}
+};
 
 export default Product;

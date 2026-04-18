@@ -1,20 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, FormEvent } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "../../axiosConfig";
 import { setUser } from "../../store/userActions";
 
-const Login = () => {
+const Login: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [visible, setVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // Explicitly typing primitive states
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [visible, setVisible] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleSubmit = async (e) => {
+  // Added FormEvent type for the form submission
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setLoading(true);
 
@@ -35,7 +37,7 @@ const Login = () => {
 
       const isAdmin = user.role === 'admin';
       navigate(isAdmin ? "/admin/dashboard" : "/");
-    } catch (error) {
+    } catch (error: any) { // Typecast to 'any' to handle the unknown error object
       alert(error.response?.data?.message || "Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
@@ -109,7 +111,7 @@ const Login = () => {
                   Remember me
                 </label>
               </div>
-              <Link to="/forgot-password" size="sm" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+              <Link to="/forgot-password"  className="text-sm font-semibold text-blue-600 hover:text-blue-700">
                 Forgot password?
               </Link>
             </div>

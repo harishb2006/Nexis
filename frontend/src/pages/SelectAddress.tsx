@@ -11,7 +11,7 @@ const SelectAddress = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     
-    const userEmail = useSelector((state) => state.user.email);
+    const userEmail = useSelector((state: any) => state.user.email);
     useEffect(() => {
         // Only fetch addresses if email exists
         if (!userEmail) return;

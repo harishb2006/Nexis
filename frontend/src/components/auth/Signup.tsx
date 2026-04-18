@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineCloudUpload } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import { RxAvatar } from "react-icons/rx";
@@ -7,16 +7,19 @@ import ValidationFormObject from "../../validation";
 import { useDispatch } from 'react-redux';
 import { setemail } from "../../store/userActions";
 
-const Signup = () => {
+const Signup: React.FC = () => {
+  // Primitives are automatically inferred by TS (string, boolean)
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
   const [visible, setVisible] = useState(false);
-  const [avatar, setAvatar] = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  // Explicitly type complex state
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -32,32 +35,38 @@ const Signup = () => {
     return () => URL.revokeObjectURL(objectUrl);
   }, [avatar]);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
+  // Typed the change event for the file input
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; // Added optional chaining
     if (file) setAvatar(file);
   };
 
-  const validateFields = () => {
+  const validateFields = (): boolean => {
     const nameError = ValidationFormObject.validteName(name);
     const emailError = ValidationFormObject.validteEmail(email);
     const passwordError = ValidationFormObject.validtePass(password);
 
-    const newErrors = {};
-    if (nameError !== true) newErrors.name = nameError;
-    if (emailError !== true) newErrors.email = emailError;
-    if (passwordError !== true) newErrors.password = passwordError;
+    // Replaced 'any' with a strict Record type
+    const newErrors: Record<string, string> = {};
+    
+    if (nameError !== true) newErrors.name = nameError as string;
+    if (emailError !== true) newErrors.email = emailError as string;
+    if (passwordError !== true) newErrors.password = passwordError as string;
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  // Typed the form submission event
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateFields()) return;
 
     setLoading(true);
     const formData = new FormData();
-    formData.append("file", avatar);
+    if (avatar) {
+        formData.append("file", avatar);
+    }
     formData.append("name", name);
     formData.append("email", email);
     formData.append("password", password);
@@ -70,7 +79,7 @@ const Signup = () => {
 
       dispatch(setemail(email));
       navigate("/login");
-    } catch (err) {
+    } catch (err: any) {
       alert(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
@@ -131,10 +140,10 @@ const Signup = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={`block w-full px-4 py-3 border rounded-xl shadow-sm transition-all duration-200 sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
-                    errors.name ? "border-red-400" : "border-slate-200 focus:border-blue-500"
+                    errors['name'] ? "border-red-400" : "border-slate-200 focus:border-blue-500"
                   }`}
                 />
-                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                {errors['name'] && <p className="text-red-500 text-xs mt-1">{errors['name']}</p>}
               </div>
 
               <div>
@@ -145,10 +154,10 @@ const Signup = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={`block w-full px-4 py-3 border rounded-xl shadow-sm transition-all duration-200 sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
-                    errors.email ? "border-red-400" : "border-slate-200 focus:border-blue-500"
+                    errors['email'] ? "border-red-400" : "border-slate-200 focus:border-blue-500"
                   }`}
                 />
-                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                {errors['email'] && <p className="text-red-500 text-xs mt-1">{errors['email']}</p>}
               </div>
 
               <div>
@@ -160,7 +169,7 @@ const Signup = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={`block w-full px-4 py-3 border rounded-xl shadow-sm transition-all duration-200 sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
-                      errors.password ? "border-red-400" : "border-slate-200 focus:border-blue-500"
+                      errors['password'] ? "border-red-400" : "border-slate-200 focus:border-blue-500"
                     }`}
                   />
                   <button
@@ -171,7 +180,7 @@ const Signup = () => {
                     {visible ? <AiOutlineEye size={20} /> : <AiOutlineEyeInvisible size={20} />}
                   </button>
                 </div>
-                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+                {errors['password'] && <p className="text-red-500 text-xs mt-1">{errors['password']}</p>}
               </div>
 
               <div>

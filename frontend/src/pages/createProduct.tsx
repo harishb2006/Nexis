@@ -9,7 +9,7 @@ const CreateProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEdit = Boolean(id);
-  const loggedInEmail = useSelector((state) => state.user.email);
+  const loggedInEmail = useSelector((state: any) => state.user.email);
   const [images, setImages] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
   const [name, setName] = useState("");
@@ -48,7 +48,7 @@ const CreateProduct = () => {
                   setStock(p.stock);
                   setEmail(p.email);
                   if (p.images && p.images.length > 0) {
-                      const backendURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                      const backendURL = (import.meta as any).env.VITE_API_URL || 'http://localhost:8000';
                       setPreviewImages(
                         p.images.map(
                           (imgPath) =>
@@ -163,7 +163,7 @@ const CreateProduct = () => {
                             className="w-full p-2 border rounded"
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Enter product description"
-                            rows="4"
+                            rows={4}
                             required
                         ></textarea>
                     </div>

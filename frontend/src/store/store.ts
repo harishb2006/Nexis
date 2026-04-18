@@ -1,19 +1,30 @@
 // store.js
 import { configureStore } from '@reduxjs/toolkit';
 
+interface UserState {
+    email: string;
+    role: string;
+    name: string;
+}
+
+interface Action {
+    type: string;
+    payload?: any;
+}
+
 const savedUserStr = localStorage.getItem('shophub_user');
-let savedUser = null;
+let savedUser: UserState | null = null;
 try {
     if (savedUserStr) savedUser = JSON.parse(savedUserStr);
 } catch (e) { }
 
-const initialUserState = savedUser || {
+const initialUserState: UserState = savedUser || {
     email: '',
     role: 'user',
     name: '',
 };
 
-const userReducer = (state = initialUserState, action) => {
+const userReducer = (state = initialUserState, action: Action) => {
     switch (action.type) {
         case 'SET_USER': {
             const newState = {
@@ -47,5 +58,8 @@ const store = configureStore({
         user: userReducer,
     },
 });
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
 
 export default store;

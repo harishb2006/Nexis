@@ -13,7 +13,7 @@ export default function ProductDetails() {
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-  const email = useSelector((state) => state.user.email);
+  const email = useSelector((state: any) => state.user.email);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -78,7 +78,7 @@ export default function ProductDetails() {
       </div>
     );
   }
-  const backendURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const backendURL = (import.meta as any).env.VITE_API_URL || 'http://localhost:8000';
 
   return (
     <>

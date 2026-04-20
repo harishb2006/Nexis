@@ -1,46 +1,94 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, Sparkles, Database, Search, Package, CheckCircle2, Zap, ThumbsUp, ThumbsDown } from 'lucide-react';
+import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { useSelector } from 'react-redux';
 import axios from '../../../axiosConfig';
 import ReactMarkdown from 'react-markdown';
 
-export default function ChatbotStreaming() {
-  const [isOpen, setIsOpen] = useState(false);
-  const userEmail = useSelector((state: any) => state.user.email); // Get email from Redux
-  const [messages, setMessages] = useState([
+// --- Type Definitions ---
+
+interface RootState {
+  user: {
+    email: string | null;
+  };
+}
+
+interface ToolUsed {
+  tool: string;
+  result: { success: boolean; [key: string]: any };
+}
+
+interface Message {
+  type: 'user' | 'bot';
+  text: string;
+  timestamp: Date;
+  error?: boolean;
+  sources?: any[];
+  toolsUsed?: ToolUsed[];
+}
+
+interface AgentStatus {
+  message: string;
+  status: string;
+}
+
+interface ToolInProgress {
+  tool: string;
+  message: string;
+  status: 'executing' | 'completed';
+}
+
+interface StreamEvent {
+  type: string;
+  threadId?: string;
+  message?: string;
+  status?: string;
+  tool?: string;
+  content?: string;
+  answer?: string;
+  sources?: any[];
+  toolsUsed?: ToolUsed[];
+}
+
+const ChatbotStreaming: React.FC = () => {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const userEmail = useSelector((state: RootState) => state.user.email);
+  
+  const [messages, setMessages] = useState<Message[]>([
     {
       type: 'bot',
-      text: "👋 Hi! I'm your AI-powered ShopHub assistant. I can search policies, check orders, and help you find products!",
+      text: "Hello. I am your Nexis assistant. I can search policies, check orders, and help you find products.",
       timestamp: new Date(),
     },
   ]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [agentStatus, setAgentStatus] = useState(null);
-  const [toolsInProgress, setToolsInProgress] = useState([]);
-  const [currentAnswer, setCurrentAnswer] = useState('');
-  const [threadId, setThreadId] = useState(null); // Conversation memory
-  const [messageFeedback, setMessageFeedback] = useState({}); // Track feedback for each message
-  const [suggestions] = useState([
+  
+  const [input, setInput] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [agentStatus, setAgentStatus] = useState<AgentStatus | null>(null);
+  const [toolsInProgress, setToolsInProgress] = useState<ToolInProgress[]>([]);
+  const [currentAnswer, setCurrentAnswer] = useState<string>('');
+  const [threadId, setThreadId] = useState<string | null>(null);
+  const [messageFeedback, setMessageFeedback] = useState<Record<number, 'up' | 'down'>>({});
+  
+  const [suggestions] = useState<string[]>([
     "How does shipping work?",
     "Show my orders",
     "Search for electronics",
-    "What's your return policy?",
+    "Return policy",
   ]);
-  const messagesEndRef = useRef(null);
+  
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = (): void => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, agentStatus, toolsInProgress]);
+  }, [messages, agentStatus, toolsInProgress, currentAnswer]);
 
-  const handleSendMessage = async (text = input) => {
+  const handleSendMessage = async (text: string = input): Promise<void> => {
     if (!text.trim() || isLoading) return;
 
-    const userMessage = {
+    const userMessage: Message = {
       type: 'user',
       text: text.trim(),
       timestamp: new Date(),
@@ -61,10 +109,12 @@ export default function ChatbotStreaming() {
         },
         body: JSON.stringify({
           question: text.trim(),
-          threadId: threadId, // Pass existing threadId for conversation memory
-          email: userEmail || null, // Pass user email if logged in
+          threadId: threadId,
+          email: userEmail || null,
         }),
       });
+
+      if (!response.body) throw new Error("No response body");
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -76,7 +126,7 @@ export default function ChatbotStreaming() {
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
-        buffer = lines.pop(); // Keep incomplete line in buffer
+        buffer = lines.pop() || ''; 
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
@@ -89,17 +139,18 @@ export default function ChatbotStreaming() {
             }
 
             try {
-              const event = JSON.parse(data);
+              const event: StreamEvent = JSON.parse(data);
               handleStreamEvent(event);
             } catch (e) {
+              console.error("Failed to parse stream event", e);
             }
           }
         }
       }
-    } catch (error) {
-      const errorMessage = {
+    } catch (error: any) {
+      const errorMessage: Message = {
         type: 'bot',
-        text: "Sorry, I'm having trouble connecting right now. Please try again later.",
+        text: "Connection error. Please try again later.",
         error: true,
         timestamp: new Date(),
       };
@@ -110,59 +161,63 @@ export default function ChatbotStreaming() {
     }
   };
 
-  const handleStreamEvent = (event) => {
+  const handleStreamEvent = (event: StreamEvent): void => {
     switch (event.type) {
       case 'thread_init':
-        // Save threadId for future messages in this conversation
-        if (!threadId) {
+        if (!threadId && event.threadId) {
           setThreadId(event.threadId);
         }
         break;
 
       case 'status':
-        setAgentStatus({
-          message: event.message,
-          status: event.status,
-        });
+        if (event.message && event.status) {
+          setAgentStatus({
+            message: event.message,
+            status: event.status,
+          });
+        }
         break;
 
       case 'tool_start':
-        setToolsInProgress((prev) => [
-          ...prev,
-          {
-            tool: event.tool,
-            message: event.message,
-            status: 'executing',
-          },
-        ]);
+        if (event.tool && event.message) {
+          setToolsInProgress((prev) => [
+            ...prev,
+            {
+              tool: event.tool as string,
+              message: event.message as string,
+              status: 'executing',
+            },
+          ]);
+        }
         break;
 
       case 'tool_complete':
         setToolsInProgress((prev) =>
           prev.map((t) =>
             t.tool === event.tool
-              ? { ...t, status: 'completed', message: event.message }
+              ? { ...t, status: 'completed', message: event.message || t.message }
               : t
           )
         );
-        // Keep tool visible for a moment
         setTimeout(() => {
           setToolsInProgress((prev) => prev.filter((t) => t.tool !== event.tool));
         }, 2000);
         break;
 
       case 'answer_start':
-        setAgentStatus({ message: '💬 Generating response...', status: 'streaming' });
+        setAgentStatus({ message: 'Generating response...', status: 'streaming' });
         break;
 
       case 'answer_chunk':
-        setCurrentAnswer((prev) => prev + event.content);
+        if (event.content) {
+          setCurrentAnswer((prev) => prev + event.content);
+        }
         break;
 
       case 'complete':
-        const botMessage = {
+        const botMessage: Message = {
           type: 'bot',
-          text: event.answer,
+          text: event.answer || '',
           sources: event.sources,
           toolsUsed: event.toolsUsed,
           timestamp: new Date(),
@@ -173,7 +228,7 @@ export default function ChatbotStreaming() {
         break;
 
       case 'error':
-        const errorMessage = {
+        const errorMessage: Message = {
           type: 'bot',
           text: `Error: ${event.message}`,
           error: true,
@@ -187,24 +242,23 @@ export default function ChatbotStreaming() {
     }
   };
 
-  const handleSuggestionClick = (suggestion) => {
+  const handleSuggestionClick = (suggestion: string): void => {
     handleSendMessage(suggestion);
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
 
-  const handleFeedback = async (messageIndex, feedbackType) => {
+  const handleFeedback = async (messageIndex: number, feedbackType: 'up' | 'down'): Promise<void> => {
     setMessageFeedback((prev) => ({
       ...prev,
       [messageIndex]: feedbackType,
     }));
     
-    // Send feedback to backend
     try {
       const message = messages[messageIndex];
       await axios.post('/api/v2/chat/feedback', {
@@ -215,26 +269,8 @@ export default function ChatbotStreaming() {
         answer: message?.text,
         userEmail: userEmail || null,
       });
-    } catch (error) {
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'searching':
-        return <Search size={16} className="animate-pulse" />;
-      case 'found_context':
-        return <Database size={16} />;
-      case 'thinking':
-        return <Sparkles size={16} className="animate-spin" />;
-      case 'tool_execution':
-        return <Zap size={16} className="animate-bounce" />;
-      case 'executing':
-        return <Loader2 size={16} className="animate-spin" />;
-      case 'completed':
-        return <CheckCircle2 size={16} className="text-green-500" />;
-      default:
-        return <Loader2 size={16} className="animate-spin" />;
+    } catch (error: any) {
+      console.error("Failed to submit feedback", error);
     }
   };
 
@@ -244,56 +280,45 @@ export default function ChatbotStreaming() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 bg-gradient-to-r from-slate-800 to-slate-700 text-white p-5 rounded-full shadow-2xl hover:from-slate-700 hover:to-slate-600 transition-all duration-300 transform hover:scale-110 z-50 group"
+          className="fixed bottom-8 right-8 bg-indigo-600 text-white px-6 py-4 rounded-full shadow-[0_8px_30px_rgb(91,50,246,0.3)] hover:bg-indigo-700 transition-all duration-300 z-50 text-sm font-semibold tracking-wide"
         >
-          <MessageCircle size={32} className="group-hover:animate-bounce" />
-          <span className="absolute -top-2 -right-2 bg-gradient-to-r from-emerald-500 to-emerald-400 text-white text-sm rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-lg animate-pulse">
-            AI
-          </span>
+          Ask Support
         </button>
       )}
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-[500px] h-[750px] bg-white rounded-2xl shadow-2xl flex flex-col z-50 border-2 border-gray-200">
+        <div className="fixed bottom-6 right-6 w-[440px] h-[80vh] max-h-[750px] bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] flex flex-col z-50 border border-gray-200 rounded-[2rem] overflow-hidden">
+          
           {/* Header */}
-          <div className="bg-gradient-to-r from-slate-800 to-slate-700 text-white p-6 rounded-t-2xl flex justify-between items-center shadow-lg">
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Sparkles size={28} className="text-emerald-400" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-ping"></div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full"></div>
-              </div>
-              <div>
-                <h3 className="font-bold text-xl">SupportFlow AI</h3>
-                <p className="text-sm text-slate-300">Smart Shopping Assistant</p>
-              </div>
+          <div className="px-6 py-5 flex justify-between items-center border-b border-gray-100 bg-white">
+            <div>
+              <h3 className="font-semibold text-lg text-gray-900 tracking-tight">SupportFlow</h3>
+              <p className="text-xs text-indigo-600 font-medium tracking-wide">AI Assistant</p>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="hover:bg-white/20 p-2 rounded-lg transition-all transform hover:scale-110"
+              className="text-xs font-semibold text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-full transition-all"
             >
-              <X size={24} />
+              Close
             </button>
           </div>
 
           {/* Agent Status Bar */}
           {(agentStatus || toolsInProgress.length > 0) && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-5 py-4 border-b border-blue-100">
+            <div className="px-6 py-3 bg-indigo-50/50 border-b border-indigo-100/50">
               {agentStatus && (
-                <div className="flex items-center space-x-3 text-base text-slate-700 mb-2">
-                  {getStatusIcon(agentStatus.status)}
-                  <span className="font-semibold">{agentStatus.message}</span>
+                <div className="flex items-center space-x-2 text-sm text-indigo-900">
+                  <span className="font-medium">{agentStatus.message}</span>
                 </div>
               )}
               {toolsInProgress.map((tool, idx) => (
                 <div
                   key={idx}
-                  className={`flex items-center space-x-3 text-sm ${
-                    tool.status === 'completed' ? 'text-emerald-600 font-semibold' : 'text-slate-600'
-                  } mb-1`}
+                  className={`flex items-center space-x-2 text-xs mt-1 ${
+                    tool.status === 'completed' ? 'text-indigo-900 font-medium' : 'text-indigo-600/70'
+                  }`}
                 >
-                  {getStatusIcon(tool.status)}
                   <span>{tool.message}</span>
                 </div>
               ))}
@@ -301,38 +326,38 @@ export default function ChatbotStreaming() {
           )}
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-5 bg-gradient-to-b from-gray-50 to-gray-100">
+          <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex flex-col ${message.type === 'user' ? 'items-end' : 'items-start'}`}
               >
                 <div
-                  className={`max-w-[90%] p-5 rounded-2xl shadow-md ${
+                  className={`max-w-[85%] p-5 text-sm leading-relaxed ${
                     message.type === 'user'
-                      ? 'bg-gradient-to-br from-slate-800 to-slate-700 text-white rounded-tr-none'
+                      ? 'bg-indigo-600 text-white rounded-[1.5rem] rounded-tr-sm shadow-sm'
                       : message.error
-                      ? 'bg-red-50 text-red-800 rounded-tl-none border-2 border-red-200'
-                      : 'bg-white text-gray-800 rounded-tl-none border border-gray-200'
+                      ? 'bg-red-50 text-red-900 border border-red-100 rounded-[1.5rem] rounded-tl-sm'
+                      : 'bg-white text-gray-800 shadow-sm border border-gray-200 rounded-[1.5rem] rounded-tl-sm'
                   }`}
                 >
                   {message.type === 'user' ? (
-                    <p className="text-base leading-relaxed whitespace-pre-wrap">{message.text}</p>
+                    <p className="whitespace-pre-wrap font-medium">{message.text}</p>
                   ) : (
-                    <div className="text-base leading-relaxed prose prose-base max-w-none">
+                    <div className="prose prose-sm max-w-none text-gray-700">
                       <ReactMarkdown
                         components={{
-                          a: ({ node, ...props }) => (
+                          a: ({ node, ...props }: any) => (
                             <a
                               {...props}
-                              className="text-blue-600 hover:text-blue-700 underline decoration-2 underline-offset-2 font-semibold transition-colors"
+                              className="text-indigo-600 font-semibold underline decoration-1 underline-offset-2 hover:text-indigo-800 transition-colors"
                               target="_blank"
                               rel="noopener noreferrer"
                             />
                           ),
-                          p: ({ node, ...props }) => <p {...props} className="mb-3" />,
-                          strong: ({ node, ...props }) => <strong {...props} className="font-bold text-slate-900" />,
-                          ul: ({ node, ...props }) => <ul {...props} className="ml-4 space-y-1" />,
+                          p: ({ node, ...props }: any) => <p {...props} className="mb-4 last:mb-0" />,
+                          strong: ({ node, ...props }: any) => <strong {...props} className="font-semibold text-gray-900" />,
+                          ul: ({ node, ...props }: any) => <ul {...props} className="ml-4 space-y-2 mb-4" />,
                         }}
                       >
                         {message.text}
@@ -341,52 +366,42 @@ export default function ChatbotStreaming() {
                   )}
                   
                   {message.toolsUsed && message.toolsUsed.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <p className="text-sm text-gray-600 font-bold mb-2">Tools Used:</p>
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">Process</p>
                       {message.toolsUsed.map((tool, idx) => (
-                        <div key={idx} className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg mt-2 flex items-center justify-between">
-                          <span className="font-semibold">{tool.tool}</span>
-                          {tool.result.success && <span className="text-emerald-600 text-lg">✓</span>}
+                        <div key={idx} className="text-xs text-gray-600 bg-gray-50 px-3 py-2 rounded-lg mt-2 flex items-center justify-between border border-gray-100">
+                          <span>{tool.tool}</span>
+                          {tool.result.success && <span className="text-indigo-500 font-medium">Done</span>}
                         </div>
                       ))}
                     </div>
                   )}
                   
                   {/* Feedback buttons for bot messages */}
-                  {message.type === 'bot' && !message.error && (
-                    <div className="flex items-center gap-3 mt-4 pt-3 border-t border-gray-200">
-                      <span className="text-xs text-gray-500 font-medium">Was this helpful?</span>
+                  {message.type === 'bot' && !message.error && index !== 0 && (
+                    <div className="flex items-center gap-2 mt-5">
                       <button
                         onClick={() => handleFeedback(index, 'up')}
-                        className={`p-1.5 rounded-lg transition-all transform hover:scale-110 ${
+                        className={`text-xs px-3 py-1.5 rounded-full transition-all border ${
                           messageFeedback[index] === 'up'
-                            ? 'bg-emerald-100 text-emerald-600'
-                            : 'hover:bg-gray-100 text-gray-400 hover:text-emerald-600'
+                            ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-medium'
+                            : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                         }`}
-                        title="Helpful"
                       >
-                        <ThumbsUp size={16} className={messageFeedback[index] === 'up' ? 'fill-current' : ''} />
+                        Helpful
                       </button>
                       <button
                         onClick={() => handleFeedback(index, 'down')}
-                        className={`p-1.5 rounded-lg transition-all transform hover:scale-110 ${
+                        className={`text-xs px-3 py-1.5 rounded-full transition-all border ${
                           messageFeedback[index] === 'down'
-                            ? 'bg-red-100 text-red-600'
-                            : 'hover:bg-gray-100 text-gray-400 hover:text-red-600'
+                            ? 'bg-red-50 border-red-200 text-red-700 font-medium'
+                            : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                         }`}
-                        title="Not helpful"
                       >
-                        <ThumbsDown size={16} className={messageFeedback[index] === 'down' ? 'fill-current' : ''} />
+                        Needs work
                       </button>
                     </div>
                   )}
-                  
-                  <p className="text-xs text-gray-400 mt-3">
-                    {message.timestamp.toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </p>
                 </div>
               </div>
             ))}
@@ -394,26 +409,26 @@ export default function ChatbotStreaming() {
             {/* Streaming Answer Preview */}
             {currentAnswer && (
               <div className="flex justify-start">
-                <div className="max-w-[90%] p-5 rounded-2xl rounded-tl-none shadow-md bg-white text-gray-800 border border-gray-200">
-                  <div className="text-base leading-relaxed prose prose-base max-w-none">
+                <div className="max-w-[85%] p-5 rounded-[1.5rem] rounded-tl-sm shadow-sm bg-white text-gray-800 border border-gray-200">
+                  <div className="prose prose-sm max-w-none text-gray-700">
                     <ReactMarkdown
                       components={{
-                        a: ({ node, ...props }) => (
+                        a: ({ node, ...props }: any) => (
                           <a
                             {...props}
-                            className="text-blue-600 hover:text-blue-700 underline decoration-2 underline-offset-2 font-semibold transition-colors"
+                            className="text-indigo-600 font-semibold underline decoration-1 underline-offset-2 hover:text-indigo-800 transition-colors"
                             target="_blank"
                             rel="noopener noreferrer"
                           />
                         ),
-                        p: ({ node, ...props }) => <p {...props} className="mb-3" />,
-                        strong: ({ node, ...props }) => <strong {...props} className="font-bold text-slate-900" />,
-                        ul: ({ node, ...props }) => <ul {...props} className="ml-4 space-y-1" />,
+                        p: ({ node, ...props }: any) => <p {...props} className="mb-4 last:mb-0" />,
+                        strong: ({ node, ...props }: any) => <strong {...props} className="font-semibold text-gray-900" />,
+                        ul: ({ node, ...props }: any) => <ul {...props} className="ml-4 space-y-2 mb-4" />,
                       }}
                     >
                       {currentAnswer}
                     </ReactMarkdown>
-                    <span className="inline-block w-2 h-4 bg-slate-600 animate-pulse ml-1"></span>
+                    <span className="inline-block w-1.5 h-3 bg-indigo-400 animate-pulse ml-1 align-middle"></span>
                   </div>
                 </div>
               </div>
@@ -421,8 +436,10 @@ export default function ChatbotStreaming() {
 
             {isLoading && !currentAnswer && !agentStatus && (
               <div className="flex justify-start">
-                <div className="bg-white p-5 rounded-2xl rounded-tl-none shadow-md border border-gray-200">
-                  <Loader2 size={24} className="animate-spin text-slate-600" />
+                <div className="bg-white px-5 py-4 rounded-[1.5rem] rounded-tl-sm shadow-sm border border-gray-200 flex gap-1">
+                  <div className="w-1.5 h-1.5 bg-indigo-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1.5 h-1.5 bg-indigo-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1.5 h-1.5 bg-indigo-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             )}
@@ -432,14 +449,13 @@ export default function ChatbotStreaming() {
 
           {/* Suggestions */}
           {messages.length === 1 && (
-            <div className="px-5 py-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50">
-              <p className="text-sm text-gray-700 font-bold mb-3">💡 Quick Actions:</p>
+            <div className="px-6 pb-4 bg-white">
               <div className="flex flex-wrap gap-2">
                 {suggestions.map((suggestion, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="text-sm bg-white border-2 border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all font-semibold shadow-sm hover:shadow-md transform hover:scale-105"
+                    className="text-xs bg-white text-gray-700 px-4 py-2.5 rounded-xl border border-gray-200 hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50/50 transition-all font-medium shadow-sm"
                   >
                     {suggestion}
                   </button>
@@ -449,23 +465,23 @@ export default function ChatbotStreaming() {
           )}
 
           {/* Input */}
-          <div className="p-5 border-t-2 border-gray-200 bg-white rounded-b-2xl">
-            <div className="flex space-x-3">
+          <div className="p-4 bg-white border-t border-gray-100">
+            <div className="flex items-center bg-gray-50 border border-gray-200 rounded-2xl p-1.5 shadow-inner focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask about orders, products, or policies..."
-                className="flex-1 px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-base shadow-sm"
+                placeholder="Message Support..."
+                className="flex-1 px-4 py-2.5 bg-transparent focus:outline-none text-sm text-gray-900 placeholder-gray-400 font-medium"
                 disabled={isLoading}
               />
               <button
                 onClick={() => handleSendMessage()}
                 disabled={!input.trim() || isLoading}
-                className="bg-gradient-to-r from-slate-800 to-slate-700 text-white px-6 py-4 rounded-xl hover:from-slate-700 hover:to-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg transform hover:scale-105 active:scale-95"
+                className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm font-semibold shadow-sm"
               >
-                <Send size={22} />
+                Send
               </button>
             </div>
           </div>
@@ -473,4 +489,6 @@ export default function ChatbotStreaming() {
       )}
     </>
   );
-}
+};
+
+export default ChatbotStreaming;

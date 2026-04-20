@@ -1,33 +1,55 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  ThumbsUp, 
-  ThumbsDown, 
-  TrendingUp, 
-  TrendingDown,
-  BarChart3,
-  Calendar,
-  Download,
-  Filter,
-  AlertCircle
-} from 'lucide-react';
 import axios from '../axiosConfig';
 
-export default function FeedbackDashboard() {
-  const [analytics, setAnalytics] = useState(null);
-  const [feedbackList, setFeedbackList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [dateRange, setDateRange] = useState('30d');
+// --- Type Definitions ---
+
+interface FeedbackItem {
+  _id?: string;
+  category: string;
+  timestamp: string;
+  question?: string;
+  answer?: string;
+}
+
+interface CategoryStat {
+  category: string;
+  positive: number;
+  negative: number;
+  total: number;
+  satisfactionRate: number;
+}
+
+interface AnalyticsSummary {
+  total: number;
+  positive: number;
+  negative: number;
+  satisfactionRate: number;
+}
+
+interface AnalyticsData {
+  summary: AnalyticsSummary;
+  byCategory: CategoryStat[];
+  recentNegative: FeedbackItem[];
+}
+
+const FeedbackDashboard: React.FC = () => {
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [feedbackList, setFeedbackList] = useState<FeedbackItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [dateRange, setDateRange] = useState<string>('30d');
 
   useEffect(() => {
     fetchAnalytics();
     fetchFeedbackList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, dateRange]);
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = async (): Promise<void> => {
     try {
       setLoading(true);
-      const params = {};
+      const params: Record<string, string> = {};
+      
       if (selectedCategory !== 'all') params.category = selectedCategory;
       
       // Set date range
@@ -45,23 +67,25 @@ export default function FeedbackDashboard() {
       const response = await axios.get('/api/v2/chat/feedback/analytics', { params });
       setAnalytics(response.data.data);
     } catch (error) {
+      console.error("Failed to fetch analytics", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchFeedbackList = async () => {
+  const fetchFeedbackList = async (): Promise<void> => {
     try {
-      const params = { limit: 10 };
+      const params: Record<string, string | number> = { limit: 10 };
       if (selectedCategory !== 'all') params.category = selectedCategory;
       
       const response = await axios.get('/api/v2/chat/feedback/list', { params });
       setFeedbackList(response.data.data.feedback);
     } catch (error) {
+      console.error("Failed to fetch feedback list", error);
     }
   };
 
-  const exportData = () => {
+  const exportData = (): void => {
     if (!analytics) return;
     
     const csvContent = [
@@ -85,36 +109,45 @@ export default function FeedbackDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-slate-800 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Loading analytics...</p>
+      <div className="min-h-screen w-full relative" style={{
+        backgroundColor: "#f8fafc",
+        backgroundImage: `radial-gradient(#cbd5e1 1.5px, transparent 1.5px)`,
+        backgroundSize: '30px 30px',
+        backgroundAttachment: 'fixed'
+      }}>
+        <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-0"></div>
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+            <p className="text-gray-900 font-bold tracking-widest uppercase text-sm animate-pulse">Loading Analytics...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen w-full relative" style={{
+        backgroundColor: "#f8fafc",
+        backgroundImage: `radial-gradient(#cbd5e1 1.5px, transparent 1.5px)`,
+        backgroundSize: '30px 30px',
+        backgroundAttachment: 'fixed'
+    }}>
+      <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-0"></div>
+
+      <main className="relative z-10 pt-20 pb-20 px-4 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">AI Feedback Analytics</h1>
-          <p className="text-gray-600">Monitor and improve your AI assistant performance</p>
+          <h1 className="text-4xl font-black text-gray-900 tracking-tight">Feedback <span className="text-indigo-600">Analytics</span></h1>
+          <p className="text-gray-500 mt-2 font-medium">Monitor and improve your AI assistant performance</p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <Filter size={20} className="text-gray-600" />
-              <span className="text-sm font-semibold text-gray-700">Filters:</span>
-            </div>
+        <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-gray-100 shadow-sm p-6 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+          <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
+            <span className="text-xs font-bold text-gray-900 uppercase tracking-widest">Filters</span>
             
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 text-sm"
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm font-medium text-gray-900"
             >
               <option value="7d">Last 7 Days</option>
               <option value="30d">Last 30 Days</option>
@@ -125,7 +158,7 @@ export default function FeedbackDashboard() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 text-sm"
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm font-medium text-gray-900"
             >
               <option value="all">All Categories</option>
               <option value="shipping">Shipping</option>
@@ -136,183 +169,128 @@ export default function FeedbackDashboard() {
               <option value="support">Support</option>
               <option value="general">General</option>
             </select>
-
-            <button
-              onClick={exportData}
-              className="ml-auto px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-all flex items-center gap-2"
-            >
-              <Download size={18} />
-              Export CSV
-            </button>
           </div>
+
+          <button
+            onClick={exportData}
+            className="w-full sm:w-auto px-6 py-2.5 bg-gray-900 text-white rounded-xl hover:bg-black transition-all text-sm font-bold shadow-sm"
+          >
+            Export CSV
+          </button>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-gray-600 text-sm font-semibold">Total Feedback</span>
-              <BarChart3 size={24} className="text-blue-500" />
-            </div>
-            <p className="text-3xl font-bold text-gray-800">{analytics?.summary.total || 0}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white/80 backdrop-blur-md rounded-[2rem] border border-gray-100 shadow-sm p-8">
+            <span className="text-gray-500 text-xs font-bold uppercase tracking-widest block mb-2">Total Feedback</span>
+            <p className="text-4xl font-black text-gray-900">{analytics?.summary.total || 0}</p>
           </div>
 
-          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-emerald-700 text-sm font-semibold">Positive</span>
-              <ThumbsUp size={24} className="text-emerald-600" />
-            </div>
-            <p className="text-3xl font-bold text-emerald-800">{analytics?.summary.positive || 0}</p>
-            <p className="text-xs text-emerald-600 mt-1">
-              {analytics?.summary.total > 0 
-                ? ((analytics.summary.positive / analytics.summary.total) * 100).toFixed(1) 
-                : 0}% of total
+          <div className="bg-white/80 backdrop-blur-md rounded-[2rem] border border-gray-100 shadow-sm p-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-2 h-full bg-indigo-500/20"></div>
+            <span className="text-gray-500 text-xs font-bold uppercase tracking-widest block mb-2">Positive</span>
+            <p className="text-4xl font-black text-gray-900">{analytics?.summary.positive || 0}</p>
+            <p className="text-xs font-medium text-indigo-600 mt-2">
+              {analytics?.summary.total ? ((analytics.summary.positive / analytics.summary.total) * 100).toFixed(1) : 0}% of total
             </p>
           </div>
 
-          <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-red-700 text-sm font-semibold">Negative</span>
-              <ThumbsDown size={24} className="text-red-600" />
-            </div>
-            <p className="text-3xl font-bold text-red-800">{analytics?.summary.negative || 0}</p>
-            <p className="text-xs text-red-600 mt-1">
-              {analytics?.summary.total > 0 
-                ? ((analytics.summary.negative / analytics.summary.total) * 100).toFixed(1) 
-                : 0}% of total
+          <div className="bg-white/80 backdrop-blur-md rounded-[2rem] border border-gray-100 shadow-sm p-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-2 h-full bg-rose-500/20"></div>
+            <span className="text-gray-500 text-xs font-bold uppercase tracking-widest block mb-2">Negative</span>
+            <p className="text-4xl font-black text-gray-900">{analytics?.summary.negative || 0}</p>
+            <p className="text-xs font-medium text-rose-600 mt-2">
+              {analytics?.summary.total ? ((analytics.summary.negative / analytics.summary.total) * 100).toFixed(1) : 0}% of total
             </p>
           </div>
 
-          <div className={`bg-gradient-to-br rounded-xl shadow-lg p-6 ${
-            analytics?.summary.satisfactionRate >= 80 
-              ? 'from-green-50 to-green-100' 
-              : analytics?.summary.satisfactionRate >= 60
-              ? 'from-yellow-50 to-yellow-100'
-              : 'from-orange-50 to-orange-100'
-          }`}>
-            <div className="flex items-center justify-between mb-2">
-              <span className={`text-sm font-semibold ${
-                analytics?.summary.satisfactionRate >= 80 
-                  ? 'text-green-700' 
-                  : analytics?.summary.satisfactionRate >= 60
-                  ? 'text-yellow-700'
-                  : 'text-orange-700'
-              }`}>Satisfaction Rate</span>
-              <TrendingUp size={24} className={
-                analytics?.summary.satisfactionRate >= 80 
-                  ? 'text-green-600' 
-                  : analytics?.summary.satisfactionRate >= 60
-                  ? 'text-yellow-600'
-                  : 'text-orange-600'
-              } />
-            </div>
-            <p className={`text-3xl font-bold ${
-              analytics?.summary.satisfactionRate >= 80 
-                ? 'text-green-800' 
-                : analytics?.summary.satisfactionRate >= 60
-                ? 'text-yellow-800'
-                : 'text-orange-800'
-            }`}>
-              {analytics?.summary.satisfactionRate || 0}%
-            </p>
-            <p className={`text-xs mt-1 ${
-              analytics?.summary.satisfactionRate >= 80 
-                ? 'text-green-600' 
-                : analytics?.summary.satisfactionRate >= 60
-                ? 'text-yellow-600'
-                : 'text-orange-600'
-            }`}>
-              {analytics?.summary.satisfactionRate >= 80 
-                ? 'Excellent!' 
-                : analytics?.summary.satisfactionRate >= 60
+          <div className="bg-gray-900 rounded-[2rem] border border-gray-800 shadow-lg p-8 text-white relative overflow-hidden">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/5 rounded-full blur-2xl"></div>
+            <span className="text-gray-400 text-xs font-bold uppercase tracking-widest block mb-2">Satisfaction Rate</span>
+            <p className="text-4xl font-black text-white">{analytics?.summary.satisfactionRate || 0}%</p>
+            <p className="text-xs font-medium text-gray-300 mt-2">
+              {analytics && analytics.summary.satisfactionRate >= 80 
+                ? 'Excellent performance' 
+                : analytics && analytics.summary.satisfactionRate >= 60
                 ? 'Good, room to improve'
                 : 'Needs improvement'}
             </p>
           </div>
         </div>
 
-        {/* Category Breakdown */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Performance by Category</h2>
-          <div className="space-y-4">
-            {analytics?.byCategory.map((cat) => (
-              <div key={cat.category} className="border-b border-gray-100 pb-4 last:border-0">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-lg font-semibold text-gray-700 capitalize">{cat.category}</span>
-                  <span className={`text-lg font-bold ${
-                    cat.satisfactionRate >= 80 
-                      ? 'text-green-600' 
-                      : cat.satisfactionRate >= 60
-                      ? 'text-yellow-600'
-                      : 'text-red-600'
-                  }`}>
-                    {cat.satisfactionRate.toFixed(1)}%
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
-                    <div
-                      className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-full rounded-full transition-all"
-                      style={{ width: `${cat.satisfactionRate}%` }}
-                    ></div>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <span className="flex items-center gap-1 text-emerald-600">
-                      <ThumbsUp size={16} /> {cat.positive}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Category Breakdown */}
+            <div className="lg:col-span-2 bg-white/80 backdrop-blur-md rounded-[2rem] border border-gray-100 shadow-sm p-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Performance by Category</h2>
+            <div className="space-y-6">
+                {analytics?.byCategory.map((cat) => (
+                <div key={cat.category} className="border-b border-gray-100/60 pb-6 last:border-0 last:pb-0">
+                    <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-bold text-gray-900 uppercase tracking-wide">{cat.category}</span>
+                    <span className="text-sm font-black text-gray-900">
+                        {cat.satisfactionRate.toFixed(1)}%
                     </span>
-                    <span className="flex items-center gap-1 text-red-600">
-                      <ThumbsDown size={16} /> {cat.negative}
-                    </span>
-                    <span className="text-gray-600">({cat.total} total)</span>
-                  </div>
+                    </div>
+                    <div className="flex items-center gap-5">
+                        <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                            <div
+                            className="bg-gray-900 h-full rounded-full transition-all"
+                            style={{ width: `${cat.satisfactionRate}%` }}
+                            ></div>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs font-semibold">
+                            <span className="text-indigo-600">POS: {cat.positive}</span>
+                            <span className="text-rose-600">NEG: {cat.negative}</span>
+                            <span className="text-gray-400 border-l border-gray-200 pl-3">TOTAL: {cat.total}</span>
+                        </div>
+                    </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
+                ))}
+            </div>
+            </div>
 
-        {/* Recent Negative Feedback */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <AlertCircle size={24} className="text-red-500" />
-            <h2 className="text-2xl font-bold text-gray-800">Recent Negative Feedback (Needs Review)</h2>
-          </div>
-          
-          {analytics?.recentNegative && analytics.recentNegative.length > 0 ? (
-            <div className="space-y-4">
-              {analytics.recentNegative.map((feedback, idx) => (
-                <div key={idx} className="border-l-4 border-red-500 bg-red-50 p-4 rounded-r-lg">
-                  <div className="flex items-start justify-between mb-2">
-                    <span className="text-xs font-semibold text-red-700 uppercase bg-red-200 px-2 py-1 rounded">
-                      {feedback.category}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {new Date(feedback.timestamp).toLocaleString()}
-                    </span>
-                  </div>
-                  {feedback.question && (
-                    <div className="mb-2">
-                      <p className="text-xs text-gray-600 font-semibold">Question:</p>
-                      <p className="text-sm text-gray-800">{feedback.question}</p>
+            {/* Recent Negative Feedback */}
+            <div className="bg-white/80 backdrop-blur-md rounded-[2rem] border border-gray-100 shadow-sm p-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Escalations</h2>
+            
+            {analytics?.recentNegative && analytics.recentNegative.length > 0 ? (
+                <div className="space-y-4">
+                {analytics.recentNegative.map((feedback, idx) => (
+                    <div key={idx} className="border border-gray-100 bg-gray-50/50 p-5 rounded-2xl">
+                        <div className="flex items-start justify-between mb-4">
+                            <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest bg-white border border-gray-200 px-2.5 py-1 rounded-md">
+                            {feedback.category}
+                            </span>
+                            <span className="text-xs font-medium text-gray-400">
+                            {new Date(feedback.timestamp).toLocaleDateString()}
+                            </span>
+                        </div>
+                        {feedback.question && (
+                            <div className="mb-3">
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">User Query</p>
+                            <p className="text-sm text-gray-900 font-medium">{feedback.question}</p>
+                            </div>
+                        )}
+                        {feedback.answer && (
+                            <div>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">AI Response</p>
+                            <p className="text-sm text-gray-600 leading-relaxed">{feedback.answer}</p>
+                            </div>
+                        )}
                     </div>
-                  )}
-                  {feedback.answer && (
-                    <div>
-                      <p className="text-xs text-gray-600 font-semibold">AI Response:</p>
-                      <p className="text-sm text-gray-800">{feedback.answer}</p>
-                    </div>
-                  )}
+                ))}
                 </div>
-              ))}
+            ) : (
+                <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-2xl">
+                    <p className="text-gray-500 font-semibold text-sm">No negative feedback recorded</p>
+                    <p className="text-gray-400 text-xs mt-1">Everything is running smoothly</p>
+                </div>
+            )}
             </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <ThumbsUp size={48} className="mx-auto mb-2 text-gray-300" />
-              <p>No negative feedback in this period! 🎉</p>
-            </div>
-          )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }
+
+export default FeedbackDashboard;

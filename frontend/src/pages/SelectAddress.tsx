@@ -1,58 +1,59 @@
-// SelectAddress.jsx
 import React, { useState, useEffect } from 'react';
 import NavBar from '../components/auth/nav'; // Ensure the path is correct and component name matches
 import { useNavigate } from 'react-router-dom';
 import axios from '../axiosConfig';
 import { useSelector } from 'react-redux'; // Import useSelector from react-redux
 
-const SelectAddress = () => {
-    const [addresses, setAddresses] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+// --- Type Definitions ---
+
+interface RootState {
+    user: {
+        email: string | null;
+    };
+}
+
+interface Address {
+    _id: string;
+    address1: string;
+    address2?: string;
+    city: string;
+    state?: string;
+    zipCode: string;
+    country: string;
+    addressType?: string;
+}
+
+const SelectAddress: React.FC = () => {
+    const [addresses, setAddresses] = useState<Address[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
     
-    const userEmail = useSelector((state: any) => state.user.email);
+    const userEmail = useSelector((state: RootState) => state.user.email);
+
     useEffect(() => {
         // Only fetch addresses if email exists
         if (!userEmail) return;
-    //     const response = await fetch(`http://localhost:8000/api/v2/user/addresses?email=${encodeURIComponent(userEmail)}`);
 
-    //     if (!response.ok) {
-    //         if (response.status === 404) {
-    //             throw new Error('User not found.');
-    //         } else if (response.status === 400) {
-    //             throw new Error('Bad request. Email parameter is missing.');
-    //         } else {
-    //             throw new Error(`HTTP error! status: ${response.status}`);
-    //         }
-    //     }
-
-    //     const data = await response.json();
-
-    //     if (data && Array.isArray(data.addresses)) {
-    //         setAddresses(data.addresses);
-    //     } else {
-    //         setAddresses([]);
-    //         console.warn('Unexpected response structure:', data);
-    //     }
-    // } 
-            axios.get('/api/v2/user/addresses', { params: { email: userEmail } })
-             .then((res) => {
-                 if (res.data && Array.isArray(res.data.addresses)) {
-                     setAddresses(res.data.addresses);
+        axios.get('/api/v2/user/addresses', { params: { email: userEmail } })
+            .then((res) => {
+                if (res.data && Array.isArray(res.data.addresses)) {
+                    setAddresses(res.data.addresses);
                 } else {
                     setAddresses([]);
                 }
-            }) .catch ((err) => {
-
+            })
+            .catch((err: any) => {
                 setError(err.response?.data?.message || err.message || 'An unexpected error occurred.');
-            }) .finally (() =>setLoading(false));
-        }, [userEmail]);
+            })
+            .finally(() => setLoading(false));
+    }, [userEmail]);
         
-    const handleSelectAddress = (addressId) => {
+    const handleSelectAddress = (addressId: string): void => {
         // Navigate to Order Confirmation with the selected address ID and email
         navigate('/order-confirmation', { state: { addressId, email: userEmail } });
     };
+
     // Render loading state
     if (loading) {
         return (
@@ -61,6 +62,7 @@ const SelectAddress = () => {
             </div>
         );
     }
+
     // Render error state
     if (error) {
         return (
@@ -75,6 +77,7 @@ const SelectAddress = () => {
             </div>
         );
     }
+
     return (
         <div className='w-full min-h-screen flex flex-col'>
             <NavBar />
@@ -90,7 +93,7 @@ const SelectAddress = () => {
                                 >
                                     <div>
                                         <p className='font-medium'>
-                                            {address.address1}{address.address2 ? `, ${address.address2}` : ''}, {address.city}, {address.state}, {address.zipCode}
+                                            {address.address1}{address.address2 ? `, ${address.address2}` : ''}, {address.city}, {address.state ? `${address.state}, ` : ''}{address.zipCode}
                                         </p>
                                         <p className='text-sm text-gray-600'>{address.country}</p>
                                         <p className='text-sm text-gray-500'>Type: {address.addressType || 'N/A'}</p>
@@ -112,4 +115,5 @@ const SelectAddress = () => {
         </div>
     );
 };
+
 export default SelectAddress;

@@ -1,9 +1,12 @@
-import Login from "../components/auth/Login"
-function LoginPage() {
+import React from 'react';
+import Login from '../components/auth/Login';
+
+const LoginPage: React.FC = () => {
     return (
         <div>
-            <Login/>
+            <Login />
         </div>
-    )
-}
-export default LoginPage
+    );
+};
+
+export default LoginPage;

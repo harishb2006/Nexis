@@ -1,22 +1,45 @@
-// store.js
 import { configureStore } from '@reduxjs/toolkit';
 
-interface UserState {
+// --- Type Definitions ---
+
+export interface UserState {
     email: string;
     role: string;
     name: string;
 }
 
-interface Action {
-    type: string;
-    payload?: any;
+interface SetUserAction {
+    type: 'SET_USER';
+    payload: {
+        email: string;
+        role?: string;
+        name?: string;
+    };
 }
+
+interface SetEmailAction {
+    type: 'SET_EMAIL';
+    payload: string;
+}
+
+interface LogoutAction {
+    type: 'LOGOUT';
+}
+
+type UserAction = SetUserAction | SetEmailAction | LogoutAction;
+
+// --- Initial State Setup ---
 
 const savedUserStr = localStorage.getItem('shophub_user');
 let savedUser: UserState | null = null;
+
 try {
-    if (savedUserStr) savedUser = JSON.parse(savedUserStr);
-} catch (e) { }
+    if (savedUserStr) {
+        savedUser = JSON.parse(savedUserStr) as UserState;
+    }
+} catch (e) {
+    console.error("Failed to parse user from local storage", e);
+}
 
 const initialUserState: UserState = savedUser || {
     email: '',
@@ -24,10 +47,12 @@ const initialUserState: UserState = savedUser || {
     name: '',
 };
 
-const userReducer = (state = initialUserState, action: Action) => {
+// --- Reducer ---
+
+const userReducer = (state: UserState = initialUserState, action: UserAction): UserState => {
     switch (action.type) {
         case 'SET_USER': {
-            const newState = {
+            const newState: UserState = {
                 ...state,
                 email: action.payload.email,
                 role: action.payload.role || 'user',
@@ -52,6 +77,8 @@ const userReducer = (state = initialUserState, action: Action) => {
             return state;
     }
 };
+
+// --- Store Configuration ---
 
 const store = configureStore({
     reducer: {
